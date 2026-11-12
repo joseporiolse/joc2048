@@ -41,6 +41,7 @@ await db.execute('''
     fecha_creacion TEXT NOT NULL,
     victorias INTEGER NOT NULL DEFAULT 0,
     derrotas INTEGER NOT NULL DEFAULT 0)
+    )
     ');
 
 await db.execute('''
@@ -53,6 +54,7 @@ await db.execute('''
        duracion_segundos INTEGER NOT NULL,
        fecha TEXT NOT NULL,
        FOREIGN KEY (id_usuario) REFERENCES usuario(id_usuario)
+       )
   ');
 
 await db.execute('''
@@ -63,3 +65,10 @@ await db.execute('''
     segundos INTEGER NOT NULL
     )
     ');
+
+}
+
+//Actualitzem la base de dades si ja existia
+      onUpgrade: (db, oldVersion, newVersion) async {
+
+      }
