@@ -1,4 +1,6 @@
+
 import 'package:flutter/material.dart';
+
 import 'models/usuari.dart';
 import 'screens/login_screen.dart';
 import 'screens/register_screen.dart';
@@ -21,7 +23,7 @@ ValueNotifier<Color>(Colors.orange);
 
 Future<void> main() async {
 
-  // Inicialitzem Flutter abans de carregar preferències
+  // Inicialitzem Flutter abans de carregar les preferències
   WidgetsFlutterBinding.ensureInitialized();
 
   // Recuperem el tema guardat a SharedPreferences
@@ -46,7 +48,7 @@ class Joc2048App extends StatelessWidget {
 
     // Pantalla d'inici de sessió
       case '/login':
-        return MaterialPageRoute(
+        return MaterialPageRoute<Usuari>(
           builder: (context) => const LoginScreen(),
         );
 
@@ -174,7 +176,7 @@ class Joc2048App extends StatelessWidget {
   }
 }
 
-// Pantalla que controla l'accés a l'aplicació
+// Pantalla inicial amb els botons d'accés
 class PantallaAcces extends StatefulWidget {
   const PantallaAcces({super.key});
 
@@ -185,37 +187,35 @@ class PantallaAcces extends StatefulWidget {
 
 class _PantallaAccesState extends State<PantallaAcces> {
 
-  // Evitem obrir dues vegades la pantalla principal
-  bool _navegant = false;
-
   // Obrim el login i esperem l'usuari autenticat
   Future<void> _iniciarSessio() async {
 
-    if (_navegant) return;
+    // Obrim la pantalla d'inici de sessió
+    final Usuari? usuari = await Navigator.pushNamed<Usuari>(
+      context,
+      '/login',
+    );
 
-    _navegant = true;
-
-    try {
-
-      // Obrim la pantalla d'inici de sessió
-      final Usuari? usuari =
-      await Navigator.pushNamed<Usuari>(
-        context,
-        '/login',
-      );
-
-      if (!mounted || usuari == null) return;
-
-      // Obrim la pantalla principal
-      await Navigator.pushNamed(
-        context,
-        '/inici',
-        arguments: usuari,
-      );
-
-    } finally {
-      _navegant = false;
+    // Si l'usuari torna enrere, no fem res
+    if (!mounted || usuari == null) {
+      return;
     }
+
+    // Si les dades són correctes, obrim el menú principal
+    Navigator.pushNamed(
+      context,
+      '/inici',
+      arguments: usuari,
+    );
+  }
+
+  // Obrim la pantalla de registre
+  void _crearCompte() {
+
+    Navigator.pushNamed(
+      context,
+      '/registre',
+    );
   }
 
   @override
@@ -276,14 +276,9 @@ class _PantallaAccesState extends State<PantallaAcces> {
                 height: AppTheme.espaiMitja,
               ),
 
-              // Botó per registrar-se
+              // Botó per crear un compte
               OutlinedButton.icon(
-                onPressed: () {
-                  Navigator.pushNamed(
-                    context,
-                    '/registre',
-                  );
-                },
+                onPressed: _crearCompte,
                 icon: const Icon(Icons.person_add),
                 label: const Text('Crear compte'),
               ),
