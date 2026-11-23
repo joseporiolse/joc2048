@@ -1,30 +1,37 @@
-// This is a basic Flutter widget test.
-//
-// To perform an interaction with a widget in your test, use the WidgetTester
-// utility in the flutter_test package. For example, you can send tap and scroll
-// gestures. You can also use WidgetTester to find child widgets in the widget
-// tree, read text, and verify that the values of widget properties are correct.
 
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:joc_2048/main.dart';
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
-    await tester.pumpWidget(const MyApp());
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
+  // Comprovem que la pantalla inicial es mostra
+  testWidgets(
+    'La pantalla inicial del joc 2048 funciona',
+        (WidgetTester tester) async {
 
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
+      // Carreguem l'aplicació
+      await tester.pumpWidget(
+        const Joc2048App(),
+      );
 
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
-  });
+      // Comprovem que apareix el títol
+      expect(
+        find.text('2048'),
+        findsOneWidget,
+      );
+
+      // Comprovem el botó d'iniciar sessió
+      expect(
+        find.text('Iniciar sessió'),
+        findsOneWidget,
+      );
+
+      // Comprovem el botó de registre
+      expect(
+        find.text('Crear compte'),
+        findsOneWidget,
+      );
+    },
+  );
 }

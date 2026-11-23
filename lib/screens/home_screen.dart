@@ -1,7 +1,11 @@
+
 import 'package:flutter/material.dart';
+
 import '../models/usuari.dart';
+import '../data/partida_dao.dart';
 import '../data/partida_guardada_dao.dart';
 import '../services/app_theme.dart';
+import '../widgets/score_card.dart';
 
 class HomeScreen extends StatefulWidget {
 
@@ -19,15 +23,18 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
 
-  // Posició seleccionada de la navegació inferior
-  int _indexSeleccionat = 0;
+  // DAO per consultar les partides
+  final PartidaDao _partidaDao = PartidaDao();
 
-  // DAO per comprovar si tenim una partida guardada
+  // DAO per comprovar les partides guardades
   final PartidaGuardadaDao _partidaGuardadaDao =
   PartidaGuardadaDao();
 
-  // Indica si l'usuari té una partida pendent
+  // Indica si tenim una partida pendent
   bool _tePartidaGuardada = false;
+
+  // Millor puntuació de l'usuari
+  int _millorPuntuacio = 0;
 
   // Indica si estem carregant les dades
   bool _carregant = true;
@@ -36,26 +43,46 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
 
-    // Comprovem si hi ha una partida per continuar
-    _comprovarPartidaGuardada();
+    // Carreguem les dades inicials
+    _carregarDades();
   }
 
-  // Consultem SQLite per saber si hi ha una partida guardada
-  Future<void> _comprovarPartidaGuardada() async {
+  // Recuperem les dades de SQLite
+  Future<void> _carregarDades() async {
+
+    if (mounted) {
+      setState(() {
+        _carregant = true;
+      });
+    }
+
     try {
+
+      final int idUsuari = widget.usuari.idUsuari!;
+
+      // Comprovem si existeix una partida guardada
       final bool existeix =
       await _partidaGuardadaDao.existeixPartida(
-        widget.usuari.idUsuari!,
+        idUsuari,
+      );
+
+      // Consultem la millor puntuació
+      final int millor =
+      await _partidaDao.obtenirMillorPuntuacio(
+        idUsuari,
       );
 
       if (!mounted) return;
 
+      // Actualitzem la interfície
       setState(() {
         _tePartidaGuardada = existeix;
+        _millorPuntuacio = millor;
         _carregant = false;
       });
 
     } catch (error) {
+
       if (!mounted) return;
 
       setState(() {
@@ -65,7 +92,7 @@ class _HomeScreenState extends State<HomeScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text(
-            'No s\'ha pogut comprovar la partida guardada.',
+            'No s\'han pogut carregar les dades.',
           ),
         ),
       );
@@ -74,16 +101,17 @@ class _HomeScreenState extends State<HomeScreen> {
 
   // Obrim una pantalla mitjançant una ruta
   Future<void> _obrirRuta(String ruta) async {
+
     await Navigator.pushNamed(
       context,
       ruta,
       arguments: widget.usuari,
     );
 
-    // Quan tornem, actualitzem la partida guardada
     if (!mounted) return;
 
-    await _comprovarPartidaGuardada();
+    // Actualitzem les dades en tornar
+    await _carregarDades();
   }
 
   // Comencem una partida nova
@@ -91,7 +119,7 @@ class _HomeScreenState extends State<HomeScreen> {
     await _obrirRuta('/joc');
   }
 
-  // Continuem la partida guardada
+  // Continuem una partida guardada
   Future<void> _continuarPartida() async {
     await _obrirRuta('/continuar');
   }
@@ -119,12 +147,7 @@ class _HomeScreenState extends State<HomeScreen> {
   // Gestionem la navegació inferior
   void _canviarSeccio(int index) {
 
-    if (index == 0) {
-      setState(() {
-        _indexSeleccionat = 0;
-      });
-      return;
-    }
+    if (index == 0) return;
 
     if (index == 1) {
       _anarHistorial();
@@ -144,7 +167,14 @@ class _HomeScreenState extends State<HomeScreen> {
 
         actions: [
 
-          // Botó per tancar la sessió
+          // Actualitzem les dades manualment
+          IconButton(
+            onPressed: _carregarDades,
+            tooltip: 'Actualitzar',
+            icon: const Icon(Icons.refresh),
+          ),
+
+          // Tanquem la sessió
           IconButton(
             onPressed: _tancarSessio,
             tooltip: 'Tancar sessió',
@@ -188,18 +218,35 @@ class _HomeScreenState extends State<HomeScreen> {
                   height: AppTheme.espaiGran,
                 ),
 
-                // Icona principal del joc
+                // Icona principal
                 Icon(
                   Icons.grid_4x4,
-                  size: 100,
-                  color: Theme.of(context).colorScheme.primary,
+                  size: 90,
+                  color: Theme.of(context)
+                      .colorScheme.primary,
                 ),
 
                 const SizedBox(
                   height: AppTheme.espaiGran,
                 ),
 
-                // Botó per començar una partida nova
+                // Mostrem la millor puntuació
+                if (_carregant)
+                  const Center(
+                    child: CircularProgressIndicator(),
+                  )
+                else
+                  ScoreCard(
+                    titol: 'La teva millor puntuació',
+                    valor: _millorPuntuacio,
+                    icona: Icons.emoji_events,
+                  ),
+
+                const SizedBox(
+                  height: AppTheme.espaiGran,
+                ),
+
+                // Comencem una partida nova
                 ElevatedButton.icon(
                   onPressed: _novaPartida,
                   icon: const Icon(Icons.play_arrow),
@@ -210,12 +257,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   height: AppTheme.espaiMitja,
                 ),
 
-                // Mostrem el botó de continuar si hi ha partida
-                if (_carregant)
-                  const Center(
-                    child: CircularProgressIndicator(),
-                  )
-                else if (_tePartidaGuardada)
+                // Continuem una partida guardada
+                if (!_carregant && _tePartidaGuardada)
                   ElevatedButton.icon(
                     onPressed: _continuarPartida,
                     icon: const Icon(Icons.restore),
@@ -226,7 +269,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   height: AppTheme.espaiGran,
                 ),
 
-                // Accés directe a l'historial
+                // Accés a l'historial
                 Card(
                   child: ListTile(
                     leading: const Icon(Icons.history),
@@ -234,25 +277,33 @@ class _HomeScreenState extends State<HomeScreen> {
                     subtitle: const Text(
                       'Consulta les teves partides anteriors',
                     ),
-                    trailing: const Icon(Icons.chevron_right),
+                    trailing: const Icon(
+                      Icons.chevron_right,
+                    ),
                     onTap: _anarHistorial,
                   ),
                 ),
 
-                // Accés directe al rànquing
+                // Accés al rànquing
                 Card(
                   child: ListTile(
-                    leading: const Icon(Icons.emoji_events),
-                    title: const Text('Rànquing i estadístiques'),
+                    leading: const Icon(
+                      Icons.emoji_events,
+                    ),
+                    title: const Text(
+                      'Rànquing i estadístiques',
+                    ),
                     subtitle: const Text(
                       'Consulta les millors puntuacions',
                     ),
-                    trailing: const Icon(Icons.chevron_right),
+                    trailing: const Icon(
+                      Icons.chevron_right,
+                    ),
                     onTap: _anarRanking,
                   ),
                 ),
 
-                // Accés directe a la configuració
+                // Accés a la configuració
                 Card(
                   child: ListTile(
                     leading: const Icon(Icons.settings),
@@ -260,7 +311,9 @@ class _HomeScreenState extends State<HomeScreen> {
                     subtitle: const Text(
                       'Personalitza el tema i els colors',
                     ),
-                    trailing: const Icon(Icons.chevron_right),
+                    trailing: const Icon(
+                      Icons.chevron_right,
+                    ),
                     onTap: _anarConfiguracio,
                   ),
                 ),
@@ -272,7 +325,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
       // Navegació principal inferior
       bottomNavigationBar: NavigationBar(
-        selectedIndex: _indexSeleccionat,
+        selectedIndex: 0,
         onDestinationSelected: _canviarSeccio,
 
         destinations: const [
@@ -289,8 +342,12 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
 
           NavigationDestination(
-            icon: Icon(Icons.emoji_events_outlined),
-            selectedIcon: Icon(Icons.emoji_events),
+            icon: Icon(
+              Icons.emoji_events_outlined,
+            ),
+            selectedIcon: Icon(
+              Icons.emoji_events,
+            ),
             label: 'Rànquing',
           ),
 

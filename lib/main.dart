@@ -1,25 +1,34 @@
 import 'package:flutter/material.dart';
-
-import 'services/preferencies_service.dart';
+import 'models/usuari.dart';
+import 'screens/login_screen.dart';
+import 'screens/register_screen.dart';
+import 'screens/home_screen.dart';
+import 'screens/game_screen.dart';
+import 'screens/history_screen.dart';
+import 'screens/game_detail_screen.dart';
+import 'screens/ranking_screen.dart';
+import 'screens/settings_screen.dart';
 import 'services/app_theme.dart';
+import 'services/preferencies_service.dart';
 
-// Guardem el tema i el color per actualitzar l'aplicació
+// Tema actual de l'aplicació
 final ValueNotifier<ThemeMode> temaActual =
-ValueNotifier(ThemeMode.system);
+ValueNotifier<ThemeMode>(ThemeMode.system);
 
+// Color personalitzat de les fitxes
 final ValueNotifier<Color> colorFitxes =
-ValueNotifier(Colors.orange);
+ValueNotifier<Color>(Colors.orange);
 
 Future<void> main() async {
 
-  // Inicialitzem Flutter abans de carregar les preferències
+  // Inicialitzem Flutter abans de carregar preferències
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Recuperem el tema guardat
+  // Recuperem el tema guardat a SharedPreferences
   temaActual.value =
   await PreferenciesService.llegirModeTema();
 
-  // Recuperem el color de les fitxes
+  // Recuperem el color guardat de les fitxes
   colorFitxes.value =
   await PreferenciesService.llegirColorFitxes();
 
@@ -30,101 +39,256 @@ Future<void> main() async {
 class Joc2048App extends StatelessWidget {
   const Joc2048App({super.key});
 
+  // Gestionem totes les rutes de l'aplicació
+  Route<dynamic> _generarRuta(RouteSettings settings) {
+
+    switch (settings.name) {
+
+    // Pantalla d'inici de sessió
+      case '/login':
+        return MaterialPageRoute(
+          builder: (context) => const LoginScreen(),
+        );
+
+    // Pantalla de registre
+      case '/registre':
+        return MaterialPageRoute(
+          builder: (context) => const RegisterScreen(),
+        );
+
+    // Pantalla principal
+      case '/inici':
+
+        final Usuari usuari = settings.arguments as Usuari;
+
+        return MaterialPageRoute(
+          builder: (context) => HomeScreen(
+            usuari: usuari,
+          ),
+        );
+
+    // Nova partida
+      case '/joc':
+
+        final Usuari usuari = settings.arguments as Usuari;
+
+        return MaterialPageRoute(
+          builder: (context) => GameScreen(
+            usuari: usuari,
+            continuarPartida: false,
+          ),
+        );
+
+    // Continuar una partida guardada
+      case '/continuar':
+
+        final Usuari usuari = settings.arguments as Usuari;
+
+        return MaterialPageRoute(
+          builder: (context) => GameScreen(
+            usuari: usuari,
+            continuarPartida: true,
+          ),
+        );
+
+    // Historial de partides
+      case '/historial':
+
+        final Usuari usuari = settings.arguments as Usuari;
+
+        return MaterialPageRoute(
+          builder: (context) => HistoryScreen(
+            usuari: usuari,
+          ),
+        );
+
+    // Detall d'una partida
+      case '/detall':
+
+        final int idPartida = settings.arguments as int;
+
+        return MaterialPageRoute(
+          builder: (context) => GameDetailScreen(
+            idPartida: idPartida,
+          ),
+        );
+
+    // Rànquing i estadístiques
+      case '/ranking':
+        return MaterialPageRoute(
+          builder: (context) => const RankingScreen(),
+        );
+
+    // Configuració
+      case '/configuracio':
+        return MaterialPageRoute(
+          builder: (context) => const SettingsScreen(),
+        );
+
+    // Ruta desconeguda
+      default:
+        return MaterialPageRoute(
+          builder: (context) => const Scaffold(
+            body: Center(
+              child: Text('Pantalla no trobada'),
+            ),
+          ),
+        );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
 
     // Escoltem els canvis del tema
     return ValueListenableBuilder<ThemeMode>(
       valueListenable: temaActual,
+
       builder: (context, mode, child) {
 
         return MaterialApp(
+
+          // Nom de l'aplicació
           title: 'Joc 2048',
+
+          // Eliminem la banda de depuració
           debugShowCheckedModeBanner: false,
 
-          // Definim els temes de l'aplicació
+          // Tema clar
           theme: AppTheme.temaClar,
+
+          // Tema fosc
           darkTheme: AppTheme.temaFosc,
+
+          // Tema seleccionat per l'usuari
           themeMode: mode,
 
-          // Pantalla temporal d'inici
-          home: const PantallaInicial(),
+          // Primera pantalla de l'aplicació
+          home: const PantallaAcces(),
+
+          // Gestió centralitzada de les rutes
+          onGenerateRoute: _generarRuta,
         );
       },
     );
   }
 }
 
-// Pantalla temporal per comprovar l'aplicació
-class PantallaInicial extends StatelessWidget {
-  const PantallaInicial({super.key});
+// Pantalla que controla l'accés a l'aplicació
+class PantallaAcces extends StatefulWidget {
+  const PantallaAcces({super.key});
 
-  // Canviem el tema a mode clar
-  Future<void> activarTemaClar() async {
-    temaActual.value = ThemeMode.light;
+  @override
+  State<PantallaAcces> createState() =>
+      _PantallaAccesState();
+}
 
-    await PreferenciesService.guardarModeTema(
-      ThemeMode.light,
-    );
-  }
+class _PantallaAccesState extends State<PantallaAcces> {
 
-  // Canviem el tema a mode fosc
-  Future<void> activarTemaFosc() async {
-    temaActual.value = ThemeMode.dark;
+  // Evitem obrir dues vegades la pantalla principal
+  bool _navegant = false;
 
-    await PreferenciesService.guardarModeTema(
-      ThemeMode.dark,
-    );
-  }
+  // Obrim el login i esperem l'usuari autenticat
+  Future<void> _iniciarSessio() async {
 
-  // Utilitzem el tema del sistema
-  Future<void> activarTemaSistema() async {
-    temaActual.value = ThemeMode.system;
+    if (_navegant) return;
 
-    await PreferenciesService.guardarModeTema(
-      ThemeMode.system,
-    );
+    _navegant = true;
+
+    try {
+
+      // Obrim la pantalla d'inici de sessió
+      final Usuari? usuari =
+      await Navigator.pushNamed<Usuari>(
+        context,
+        '/login',
+      );
+
+      if (!mounted || usuari == null) return;
+
+      // Obrim la pantalla principal
+      await Navigator.pushNamed(
+        context,
+        '/inici',
+        arguments: usuari,
+      );
+
+    } finally {
+      _navegant = false;
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Joc 2048'),
-      ),
-
       body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
+        child: Padding(
+          padding: const EdgeInsets.all(
+            AppTheme.espaiGran,
+          ),
 
-            const Text(
-              'Benvingut al joc 2048!',
-              style: AppTheme.estilTitol,
-            ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
 
-            const SizedBox(height: AppTheme.espaiGran),
+              // Icona principal
+              Icon(
+                Icons.grid_4x4,
+                size: 110,
+                color: Theme.of(context).colorScheme.primary,
+              ),
 
-            ElevatedButton(
-              onPressed: activarTemaClar,
-              child: const Text('Tema clar'),
-            ),
+              const SizedBox(
+                height: AppTheme.espaiGran,
+              ),
 
-            const SizedBox(height: AppTheme.espaiPetit),
+              // Nom del joc
+              const Text(
+                '2048',
+                style: TextStyle(
+                  fontSize: 48,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
 
-            ElevatedButton(
-              onPressed: activarTemaFosc,
-              child: const Text('Tema fosc'),
-            ),
+              const SizedBox(
+                height: AppTheme.espaiPetit,
+              ),
 
-            const SizedBox(height: AppTheme.espaiPetit),
+              const Text(
+                'Combina les fitxes i arriba a 2048!',
+                textAlign: TextAlign.center,
+              ),
 
-            ElevatedButton(
-              onPressed: activarTemaSistema,
-              child: const Text('Tema del sistema'),
-            ),
+              const SizedBox(
+                height: AppTheme.espaiGran,
+              ),
 
-          ],
+              // Botó per iniciar sessió
+              ElevatedButton.icon(
+                onPressed: _iniciarSessio,
+                icon: const Icon(Icons.login),
+                label: const Text('Iniciar sessió'),
+              ),
+
+              const SizedBox(
+                height: AppTheme.espaiMitja,
+              ),
+
+              // Botó per registrar-se
+              OutlinedButton.icon(
+                onPressed: () {
+                  Navigator.pushNamed(
+                    context,
+                    '/registre',
+                  );
+                },
+                icon: const Icon(Icons.person_add),
+                label: const Text('Crear compte'),
+              ),
+            ],
+          ),
         ),
       ),
     );
