@@ -5,7 +5,6 @@ class Usuari {
   String contrasena;
   String dataRegistre;
 
-  // Constructor de l'usuari
   Usuari({
     this.idUsuari,
     required this.usuari,
@@ -14,7 +13,7 @@ class Usuari {
     required this.dataRegistre,
   });
 
-  // Convertim l'usuari en un Map per guardar-lo a SQLite
+  //Convertim l'usuari a Map
   Map<String, dynamic> toMap() {
     return {
       'id_usuario': idUsuari,
@@ -25,7 +24,7 @@ class Usuari {
     };
   }
 
-  // Convertim les dades de SQLite en un objecte Usuari
+  //Recuperem l'usuari des del Map
   factory Usuari.fromMap(Map<String, dynamic> map) {
     return Usuari(
       idUsuari: map['id_usuario'],

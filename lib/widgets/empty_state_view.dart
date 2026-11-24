@@ -4,19 +4,14 @@ import '../services/app_theme.dart';
 
 class EmptyStateView extends StatelessWidget {
 
-  // Títol que mostrem quan no hi ha dades
   final String titol;
 
-  // Missatge explicatiu
   final String missatge;
 
-  // Icona que representa l'estat buit
   final IconData icona;
 
-  // Text opcional del botó
   final String? textBoto;
 
-  // Acció opcional del botó
   final VoidCallback? enPremer;
 
   const EmptyStateView({
@@ -31,7 +26,6 @@ class EmptyStateView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
 
-    // Obtenim els colors del tema actual
     final colors = Theme.of(context).colorScheme;
 
     return Center(
@@ -44,7 +38,6 @@ class EmptyStateView extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
 
-            // Icona de l'estat buit
             Icon(
               icona,
               size: 72,
@@ -55,7 +48,6 @@ class EmptyStateView extends StatelessWidget {
               height: AppTheme.espaiMitja,
             ),
 
-            // Títol principal
             Text(
               titol,
               textAlign: TextAlign.center,
@@ -68,7 +60,6 @@ class EmptyStateView extends StatelessWidget {
               height: AppTheme.espaiPetit,
             ),
 
-            // Missatge explicatiu
             Text(
               missatge,
               textAlign: TextAlign.center,
@@ -78,8 +69,8 @@ class EmptyStateView extends StatelessWidget {
               ),
             ),
 
-            // Mostrem el botó només si tenim
-            // un text i una acció definits
+            //Mostrem el botó només si tenim
+            //un text i una acció definits
             if (textBoto != null && enPremer != null) ...[
 
               const SizedBox(

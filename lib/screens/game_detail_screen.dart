@@ -9,7 +9,6 @@ import '../widgets/stat_card.dart';
 
 class GameDetailScreen extends StatefulWidget {
 
-  // Identificador de la partida que volem consultar
   final int idPartida;
   final int idUsuari;
 
@@ -26,24 +25,21 @@ class GameDetailScreen extends StatefulWidget {
 
 class _GameDetailScreenState extends State<GameDetailScreen> {
 
-  // DAO per consultar i eliminar partides
   final PartidaDao _partidaDao = PartidaDao();
 
-  // Consulta asíncrona de la partida
   late Future<Partida?> _futurPartida;
 
-  // Evitem eliminar dues vegades la mateixa partida
+  //Evitem eliminar dues vegades la mateixa partida
   bool _eliminant = false;
 
   @override
   void initState() {
     super.initState();
 
-    // Carreguem la partida quan obrim la pantalla
     _carregarPartida();
   }
 
-  // Recuperem la partida des de SQLite
+  //Recuperem la partida des de SQLite
   void _carregarPartida() {
     setState(() {
       _futurPartida = _partidaDao.obtenirPerId(
@@ -52,7 +48,7 @@ class _GameDetailScreenState extends State<GameDetailScreen> {
     });
   }
 
-  // Convertim els segons en hores, minuts i segons
+  //Convertim els segons en hores, minuts i segons
   String _formatarDuracio(int segonsTotals) {
 
     final int hores = segonsTotals ~/ 3600;
@@ -69,7 +65,7 @@ class _GameDetailScreenState extends State<GameDetailScreen> {
         '${segons.toString().padLeft(2, '0')}';
   }
 
-  // Convertim la data ISO en un format llegible
+  //Convertim la data ISO en un format llegible
   String _formatarData(String data) {
 
     final DateTime? dataConvertida =
@@ -96,7 +92,7 @@ class _GameDetailScreenState extends State<GameDetailScreen> {
     return '$dia/$mes/$any - $hora:$minut';
   }
 
-  // Demanem confirmació abans d'eliminar
+  //Demanem confirmació abans d'eliminar
   Future<void> _confirmarEliminacio() async {
 
     if (_eliminant) return;
@@ -116,7 +112,7 @@ class _GameDetailScreenState extends State<GameDetailScreen> {
     await _eliminarPartida();
   }
 
-  // Eliminem la partida de SQLite
+  //Eliminem la partida de SQLite
   Future<void> _eliminarPartida() async {
 
     setState(() {
@@ -125,7 +121,6 @@ class _GameDetailScreenState extends State<GameDetailScreen> {
 
     try {
 
-      // Eliminem la partida pel seu identificador
       final int filesEliminades =
       await _partidaDao.eliminar(
         widget.idPartida,
@@ -136,7 +131,6 @@ class _GameDetailScreenState extends State<GameDetailScreen> {
 
       if (filesEliminades == 0) {
 
-        // La partida ja no existeix
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text(
@@ -149,8 +143,6 @@ class _GameDetailScreenState extends State<GameDetailScreen> {
         return;
       }
 
-      // Tornem a l'historial indicant que
-      // hem eliminat correctament la partida
       Navigator.pop(context, true);
 
     } catch (error) {
@@ -175,13 +167,12 @@ class _GameDetailScreenState extends State<GameDetailScreen> {
     }
   }
 
-  // Construïm la informació de la partida
+  //Construïm la informació de la partida
   Widget _construirDetall(
       BuildContext context,
       Partida? partida,
       ) {
 
-    // Comprovem si la partida existeix
     if (partida == null) {
 
       return const Center(
@@ -206,7 +197,6 @@ class _GameDetailScreenState extends State<GameDetailScreen> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
 
-              // Icona de la partida
               Icon(
                 Icons.emoji_events,
                 size: 80,
@@ -217,7 +207,6 @@ class _GameDetailScreenState extends State<GameDetailScreen> {
                 height: AppTheme.espaiMitja,
               ),
 
-              // Títol principal
               const Text(
                 'Resultat de la partida',
                 textAlign: TextAlign.center,
@@ -228,7 +217,6 @@ class _GameDetailScreenState extends State<GameDetailScreen> {
                 height: AppTheme.espaiGran,
               ),
 
-              // Puntuació final
               ScoreCard(
                 titol: 'Puntuació final',
                 valor: partida.puntuacio,
@@ -239,7 +227,6 @@ class _GameDetailScreenState extends State<GameDetailScreen> {
                 height: AppTheme.espaiMitja,
               ),
 
-              // Estadístiques principals
               Row(
                 children: [
 
@@ -293,7 +280,6 @@ class _GameDetailScreenState extends State<GameDetailScreen> {
                 height: AppTheme.espaiGran,
               ),
 
-              // Informació addicional
               Card(
                 child: Padding(
                   padding: const EdgeInsets.all(
@@ -345,7 +331,6 @@ class _GameDetailScreenState extends State<GameDetailScreen> {
                 height: AppTheme.espaiGran,
               ),
 
-              // Botó per eliminar la partida
               if (partida.idUsuari == widget.idUsuari)
                 FilledButton.icon(
                   onPressed:
@@ -390,7 +375,6 @@ class _GameDetailScreenState extends State<GameDetailScreen> {
 
         actions: [
 
-          // Botó per actualitzar les dades
           IconButton(
             onPressed: _carregarPartida,
             tooltip: 'Actualitzar',
@@ -399,7 +383,6 @@ class _GameDetailScreenState extends State<GameDetailScreen> {
         ],
       ),
 
-      // Gestionem la consulta asíncrona
       body: AsyncDataView<Partida?>(
         futur: _futurPartida,
 

@@ -11,52 +11,48 @@ import 'screens/settings_screen.dart';
 import 'services/app_theme.dart';
 import 'services/preferencies_service.dart';
 
-// Tema actual de l'aplicació
+//Tema actual de l'aplicació
 final ValueNotifier<ThemeMode> temaActual =
 ValueNotifier<ThemeMode>(ThemeMode.system);
 
-// Color personalitzat de les fitxes
 final ValueNotifier<Color> colorFitxes =
 ValueNotifier<Color>(Colors.orange);
 
 Future<void> main() async {
 
-  // Inicialitzem Flutter abans de carregar les preferències
+  //Inicialitzem Flutter abans de carregar les preferències
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Recuperem el tema guardat a SharedPreferences
+  //Recuperem el tema guardat a SharedPreferences
   temaActual.value =
   await PreferenciesService.llegirModeTema();
 
-  // Recuperem el color guardat de les fitxes
+  //Recuperem el color guardat de les fitxes
   colorFitxes.value =
   await PreferenciesService.llegirColorFitxes();
 
-  // Iniciem l'aplicació
+  //Iniciem l'aplicació
   runApp(const Joc2048App());
 }
 
 class Joc2048App extends StatelessWidget {
   const Joc2048App({super.key});
 
-  // Gestionem totes les rutes de l'aplicació
+  //Gestionem totes les rutes de l'aplicació
   Route<dynamic> _generarRuta(RouteSettings settings) {
 
     switch (settings.name) {
 
-    // Pantalla d'inici de sessió
       case '/login':
         return MaterialPageRoute<Usuari>(
           builder: (context) => const LoginScreen(),
         );
 
-    // Pantalla de registre
       case '/registre':
         return MaterialPageRoute(
           builder: (context) => const RegisterScreen(),
         );
 
-    // Pantalla principal
       case '/inici':
 
         final Usuari usuari = settings.arguments as Usuari;
@@ -67,7 +63,6 @@ class Joc2048App extends StatelessWidget {
           ),
         );
 
-    // Nova partida
       case '/joc':
 
         final Usuari usuari = settings.arguments as Usuari;
@@ -79,7 +74,6 @@ class Joc2048App extends StatelessWidget {
           ),
         );
 
-    // Continuar una partida guardada
       case '/continuar':
 
         final Usuari usuari = settings.arguments as Usuari;
@@ -91,7 +85,6 @@ class Joc2048App extends StatelessWidget {
           ),
         );
 
-    // Historial de partides
       case '/historial':
 
         final Usuari usuari = settings.arguments as Usuari;
@@ -102,7 +95,6 @@ class Joc2048App extends StatelessWidget {
           ),
         );
 
-    // Detall d'una partida
       case '/detall':
 
         final arguments = settings.arguments as Map<String, int>;
@@ -115,19 +107,16 @@ class Joc2048App extends StatelessWidget {
           ),
         );
 
-    // Rànquing i estadístiques
       case '/ranking':
         return MaterialPageRoute(
           builder: (context) => const RankingScreen(),
         );
 
-    // Configuració
       case '/configuracio':
         return MaterialPageRoute(
           builder: (context) => SettingsScreen(usuari: settings.arguments as Usuari),
         );
 
-    // Ruta desconeguda
       default:
         return MaterialPageRoute(
           builder: (context) => const Scaffold(
@@ -142,7 +131,7 @@ class Joc2048App extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
 
-    // Escoltem els canvis del tema
+    //Escoltem els canvis del tema
     return ValueListenableBuilder<ThemeMode>(
       valueListenable: temaActual,
 
@@ -150,25 +139,18 @@ class Joc2048App extends StatelessWidget {
 
         return MaterialApp(
 
-          // Nom de l'aplicació
           title: 'Joc 2048',
 
-          // Eliminem la banda de depuració
           debugShowCheckedModeBanner: false,
 
-          // Tema clar
           theme: AppTheme.temaClar,
 
-          // Tema fosc
           darkTheme: AppTheme.temaFosc,
 
-          // Tema seleccionat per l'usuari
           themeMode: mode,
 
-          // Primera pantalla de l'aplicació
           home: const PantallaAcces(),
 
-          // Gestió centralitzada de les rutes
           onGenerateRoute: _generarRuta,
         );
       },
@@ -176,7 +158,7 @@ class Joc2048App extends StatelessWidget {
   }
 }
 
-// Pantalla inicial amb els botons d'accés
+//Pantalla inicial amb els botons d'accés
 class PantallaAcces extends StatefulWidget {
   const PantallaAcces({super.key});
 
@@ -187,21 +169,18 @@ class PantallaAcces extends StatefulWidget {
 
 class _PantallaAccesState extends State<PantallaAcces> {
 
-  // Obrim el login i esperem l'usuari autenticat
+  //Obrim el login i esperem l'usuari autenticat
   Future<void> _iniciarSessio() async {
 
-    // Obrim la pantalla d'inici de sessió
     final Usuari? usuari = await Navigator.pushNamed<Usuari>(
       context,
       '/login',
     );
 
-    // Si l'usuari torna enrere, no fem res
     if (!mounted || usuari == null) {
       return;
     }
 
-    // Si les dades són correctes, obrim el menú principal
     Navigator.pushNamed(
       context,
       '/inici',
@@ -209,7 +188,6 @@ class _PantallaAccesState extends State<PantallaAcces> {
     );
   }
 
-  // Obrim la pantalla de registre
   void _crearCompte() {
 
     Navigator.pushNamed(
@@ -232,7 +210,6 @@ class _PantallaAccesState extends State<PantallaAcces> {
             mainAxisSize: MainAxisSize.min,
             children: [
 
-              // Icona principal
               Icon(
                 Icons.grid_4x4,
                 size: 110,
@@ -243,7 +220,6 @@ class _PantallaAccesState extends State<PantallaAcces> {
                 height: AppTheme.espaiGran,
               ),
 
-              // Nom del joc
               const Text(
                 '2048',
                 style: TextStyle(
@@ -265,7 +241,6 @@ class _PantallaAccesState extends State<PantallaAcces> {
                 height: AppTheme.espaiGran,
               ),
 
-              // Botó per iniciar sessió
               ElevatedButton.icon(
                 onPressed: _iniciarSessio,
                 icon: const Icon(Icons.login),
@@ -276,7 +251,6 @@ class _PantallaAccesState extends State<PantallaAcces> {
                 height: AppTheme.espaiMitja,
               ),
 
-              // Botó per crear un compte
               OutlinedButton.icon(
                 onPressed: _crearCompte,
                 icon: const Icon(Icons.person_add),

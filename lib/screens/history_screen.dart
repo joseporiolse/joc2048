@@ -22,24 +22,19 @@ class HistoryScreen extends StatefulWidget {
 
 class _HistoryScreenState extends State<HistoryScreen> {
 
-  // DAO per consultar i modificar SQLite
   final PartidaDao _partidaDao = PartidaDao();
 
-  // Controlador del filtre de jugador
   final TextEditingController _controladorJugador =
   TextEditingController();
 
-  // Future que gestiona la càrrega de dades
   late Future<List<Partida>> _futurPartides;
 
-  // Partides que mostrem a la pantalla
   List<Partida> _partides = [];
 
-  // Filtres seleccionats
   String _filtreJugador = '';
   int? _filtreFitxa;
 
-  // Evitem que una consulta antiga substitueixi la nova
+  //Evitem mostrar consultes antigues
   int _versioCarrega = 0;
 
   @override
@@ -54,7 +49,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
     super.dispose();
   }
 
-  // Recuperem les partides des de SQLite
+  //Recuperem les partides des de SQLite
   void _carregarPartides() {
     final int versio = ++_versioCarrega;
 
@@ -63,15 +58,14 @@ class _HistoryScreenState extends State<HistoryScreen> {
     });
   }
 
-  // Consultem SQLite i apliquem els filtres
+  //Consultem SQLite i apliquem els filtres
   Future<List<Partida>> _obtenirPartides(int versio) async {
 
-    // Consultem els filtres directament al DAO
     final String nom = _filtreJugador;
     final int? fitxa = _filtreFitxa;
     final List<Partida> resultat = await _partidaDao.filtrarHistorial(nom, fitxa);
 
-    // Actualitzem la llista només si és la consulta actual
+    //Actualitzem la llista només si és la consulta actual
     if (mounted && versio == _versioCarrega) {
       _partides = resultat;
     }
@@ -79,18 +73,17 @@ class _HistoryScreenState extends State<HistoryScreen> {
     return resultat;
   }
 
-  // Actualitzem l'historial arrossegant cap avall
+  //Actualitzem l'historial arrossegant cap avall
   Future<void> _actualitzarHistorial() async {
     _carregarPartides();
 
     try {
       await _futurPartides;
     } catch (error) {
-      // AsyncDataView mostrarà l'error.
     }
   }
 
-  // Apliquem els filtres seleccionats
+  //Apliquem els filtres seleccionats
   void _aplicarFiltres() {
     setState(() {
       _filtreJugador = _controladorJugador.text.trim();
@@ -99,7 +92,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
     _carregarPartides();
   }
 
-  // Eliminem tots els filtres
+  //Eliminem tots els filtres
   void _netejarFiltres() {
     _controladorJugador.clear();
 
@@ -111,7 +104,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
     _carregarPartides();
   }
 
-  // Canviem el filtre de fitxa màxima
+  //Canviem el filtre de fitxa màxima
   void _canviarFiltreFitxa(int? valor) {
     setState(() {
       _filtreFitxa = valor;
@@ -120,7 +113,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
     _carregarPartides();
   }
 
-  // Confirmem l'eliminació d'una partida
+  //Confirmem l'eliminació d'una partida
   Future<bool> _confirmarEliminacio() async {
     return await ConfirmDialog.mostrar(
       context,
@@ -132,12 +125,11 @@ class _HistoryScreenState extends State<HistoryScreen> {
     );
   }
 
-  // Eliminem una partida de SQLite
+  //Eliminem una partida de SQLite
   Future<void> _eliminarPartida(Partida partida) async {
 
     if (partida.idUsuari != widget.usuari.idUsuari) return;
 
-    // Eliminem visualment la partida
     setState(() {
       _partides.removeWhere((element) {
         return element.idPartida == partida.idPartida;
@@ -154,7 +146,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
 
       if (!mounted) return;
 
-      // Permetem recuperar la partida eliminada
+      //Permetem recuperar la partida eliminada
       ScaffoldMessenger.of(context).hideCurrentSnackBar();
 
       ScaffoldMessenger.of(context).showSnackBar(
@@ -184,7 +176,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
     }
   }
 
-  // Recuperem una partida eliminada
+  //Recuperem una partida eliminada
   Future<void> _restaurarPartida(Partida partida) async {
     try {
       await _partidaDao.restaurar(partida);
@@ -214,7 +206,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
     }
   }
 
-  // Obrim el detall d'una partida
+  //Obrim el detall d'una partida
   Future<void> _obrirDetall(Partida partida) async {
 
     final bool? eliminada =
@@ -234,7 +226,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
     }
   }
 
-  // Mostrem les opcions amb una pulsació llarga
+  //Mostrem les opcions amb una pulsació llarga
   Future<void> _mostrarOpcionsPartida(
       Partida partida,
       ) async {
@@ -247,7 +239,6 @@ class _HistoryScreenState extends State<HistoryScreen> {
             mainAxisSize: MainAxisSize.min,
             children: [
 
-              // Consultar el detall
               ListTile(
                 leading: const Icon(Icons.visibility),
                 title: const Text('Veure detall'),
@@ -256,7 +247,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                 },
               ),
 
-              // Només podem eliminar les nostres partides
+              //Només podem eliminar les nostres partides
               if (partida.idUsuari == widget.usuari.idUsuari)
                 ListTile(
                   leading: Icon(
@@ -288,14 +279,14 @@ class _HistoryScreenState extends State<HistoryScreen> {
 
       await _eliminarPartida(partida);
 
-      // Actualitzem el Dismissible després de l'eliminació
+      //Actualitzem el Dismissible després de l'eliminació
       if (mounted) {
         _carregarPartides();
       }
     }
   }
 
-  // Confirmem si volem buidar l'historial
+  //Confirmem si volem buidar l'historial
   Future<void> _confirmarBuidarHistorial() async {
 
     final bool confirmar = await ConfirmDialog.mostrar(
@@ -313,7 +304,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
     await _buidarHistorial();
   }
 
-  // Eliminem les partides de l'usuari actual
+  //Eliminem les partides de l'usuari actual
   Future<void> _buidarHistorial() async {
     try {
       await _partidaDao.buidarHistorial(widget.usuari.idUsuari!);
@@ -343,7 +334,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
     }
   }
 
-  // Construïm els controls dels filtres
+  //Construïm els controls dels filtres
   Widget _construirFiltres() {
     return Padding(
       padding: const EdgeInsets.all(
@@ -353,7 +344,6 @@ class _HistoryScreenState extends State<HistoryScreen> {
       child: Column(
         children: [
 
-          // Filtre per jugador
           TextField(
             controller: _controladorJugador,
             decoration: const InputDecoration(
@@ -370,7 +360,6 @@ class _HistoryScreenState extends State<HistoryScreen> {
             height: AppTheme.espaiPetit,
           ),
 
-          // Filtre per fitxa màxima
           DropdownButtonFormField<int>(
             initialValue: _filtreFitxa,
             decoration: const InputDecoration(
@@ -406,7 +395,6 @@ class _HistoryScreenState extends State<HistoryScreen> {
             height: AppTheme.espaiPetit,
           ),
 
-          // Botons dels filtres
           Row(
             children: [
               Expanded(
@@ -433,7 +421,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
     );
   }
 
-  // Construïm el llistat de partides
+  //Construïm el llistat de partides
   Widget _construirLlista(
       BuildContext context,
       List<Partida> dades,
@@ -474,7 +462,6 @@ class _HistoryScreenState extends State<HistoryScreen> {
 
           final Partida partida = _partides[index];
 
-          // Detectem la pulsació llarga sobre la partida
           return GestureDetector(
             key: ValueKey(partida.idPartida),
             onLongPress: () {
@@ -486,15 +473,12 @@ class _HistoryScreenState extends State<HistoryScreen> {
               partida: partida,
               esEliminable: partida.idUsuari == widget.usuari.idUsuari,
 
-              // Pulsació curta: obrim el detall
               enTocar: () {
                 _obrirDetall(partida);
               },
 
-              // Confirmació del lliscament
               confirmarEliminacio: _confirmarEliminacio,
 
-              // Eliminació lateral
               enEliminar: () {
                 _eliminarPartida(partida);
               },
@@ -514,14 +498,12 @@ class _HistoryScreenState extends State<HistoryScreen> {
 
         actions: [
 
-          // Actualitzem les dades
           IconButton(
             onPressed: _carregarPartides,
             tooltip: 'Actualitzar',
             icon: const Icon(Icons.refresh),
           ),
 
-          // Buidem l'historial
           IconButton(
             onPressed: _confirmarBuidarHistorial,
             tooltip: 'Buidar historial',
@@ -533,10 +515,8 @@ class _HistoryScreenState extends State<HistoryScreen> {
       body: Column(
         children: [
 
-          // Controls dels filtres
           _construirFiltres(),
 
-          // Historial recuperat de SQLite
           Expanded(
             child: AsyncDataView<List<Partida>>(
               futur: _futurPartides,

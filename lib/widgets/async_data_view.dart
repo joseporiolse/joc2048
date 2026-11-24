@@ -3,17 +3,13 @@ import '../services/app_theme.dart';
 
 class AsyncDataView<T> extends StatelessWidget {
 
-  // Operació asíncrona que recupera les dades
   final Future<T> futur;
 
-  // Widget que mostrarem quan tinguem les dades
   final Widget Function(BuildContext context, T dades)
   construirContingut;
 
-  // Acció opcional per tornar a carregar les dades
   final VoidCallback? enReintentar;
 
-  // Missatge que mostrem mentre es carreguen les dades
   final String missatgeCarrega;
 
   const AsyncDataView({
@@ -27,13 +23,12 @@ class AsyncDataView<T> extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
 
-    // FutureBuilder escolta el resultat de l'operació
     return FutureBuilder<T>(
       future: futur,
 
       builder: (context, snapshot) {
 
-        // Mentre esperem les dades, mostrem la càrrega
+        //Mentre esperem les dades, mostrem la càrrega
         if (snapshot.connectionState != ConnectionState.done) {
           return Center(
             child: Column(
@@ -52,7 +47,7 @@ class AsyncDataView<T> extends StatelessWidget {
           );
         }
 
-        // Si hi ha hagut un error, mostrem un missatge
+        //Si hi ha hagut un error, mostrem un missatge
         if (snapshot.hasError) {
           return Center(
             child: Padding(
@@ -92,7 +87,6 @@ class AsyncDataView<T> extends StatelessWidget {
                     textAlign: TextAlign.center,
                   ),
 
-                  // Mostrem el botó si tenim una acció definida
                   if (enReintentar != null) ...[
 
                     const SizedBox(
@@ -111,7 +105,6 @@ class AsyncDataView<T> extends StatelessWidget {
           );
         }
 
-        // Si tenim dades, construïm el contingut
         if (snapshot.hasData) {
           return construirContingut(
             context,
@@ -119,7 +112,6 @@ class AsyncDataView<T> extends StatelessWidget {
           );
         }
 
-        // Si l'operació no retorna dades
         return const Center(
           child: Text('No hi ha dades disponibles.'),
         );

@@ -4,11 +4,11 @@ import '../services/database_service.dart';
 
 class PartidaDao {
 
-  // Obtenim la connexió amb la base de dades
+  //Obtenim la connexió amb la base de dades
   Future<Database> get _db =>
       DatabaseService.obtenirDatabase();
 
-  // Inserim una partida finalitzada
+  //Inserim una partida finalitzada
   Future<int> inserir(Partida partida) async {
     final db = await _db;
 
@@ -18,7 +18,7 @@ class PartidaDao {
     );
   }
 
-  // Obtenim totes les partides ordenades per data
+  //Obtenim totes les partides ordenades per data
   Future<List<Partida>> obtenirHistorial() async {
     final db = await _db;
 
@@ -30,7 +30,7 @@ class PartidaDao {
     return files.map(Partida.fromMap).toList();
   }
 
-  // Busquem una partida pel seu identificador
+  //Busquem una partida pel seu identificador
   Future<Partida?> obtenirPerId(int id) async {
     final db = await _db;
 
@@ -48,7 +48,7 @@ class PartidaDao {
     return Partida.fromMap(files.first);
   }
 
-  // Eliminem una partida concreta del nostre usuari
+  //Eliminem una partida concreta del nostre usuari
   Future<int> eliminar(int id, int idUsuari) async {
     final db = await _db;
 
@@ -59,7 +59,7 @@ class PartidaDao {
     );
   }
 
-  // Eliminem totes les partides de l'usuari actual
+  //Eliminem totes les partides de l'usuari actual
   Future<int> buidarHistorial(int idUsuari) async {
     final db = await _db;
 
@@ -70,7 +70,7 @@ class PartidaDao {
     );
   }
 
-  // Restaurem una partida eliminada
+  //Restaurem una partida eliminada
   Future<void> restaurar(Partida partida) async {
     final db = await _db;
 
@@ -81,7 +81,7 @@ class PartidaDao {
     );
   }
 
-  // Obtenim les 10 millors partides
+  //Obtenim les 10 millors partides
   Future<List<Partida>> obtenirRanking() async {
     final db = await _db;
 
@@ -94,7 +94,7 @@ class PartidaDao {
     return files.map(Partida.fromMap).toList();
   }
 
-  // Consultem l'historial aplicant els dos filtres a SQLite
+  //Filtrem l'historial a SQLite
   Future<List<Partida>> filtrarHistorial(String nom, int? fitxa) async {
     final db = await _db;
 
@@ -108,7 +108,7 @@ class PartidaDao {
     return files.map(Partida.fromMap).toList();
   }
 
-  // Filtrem l'historial pel nom del jugador
+  //Filtrem l'historial pel nom del jugador
   Future<List<Partida>> filtrarPerJugador(String nom) async {
     final db = await _db;
 
@@ -124,7 +124,7 @@ class PartidaDao {
     return files.map(Partida.fromMap).toList();
   }
 
-  // Filtrem les partides per la fitxa màxima
+  //Filtrem les partides per la fitxa màxima
   Future<List<Partida>> filtrarPerFitxa(int fitxa) async {
     final db = await _db;
 
@@ -138,7 +138,7 @@ class PartidaDao {
     return files.map(Partida.fromMap).toList();
   }
 
-  // Calculem les estadístiques globals
+  //Calculem les estadístiques globals
   Future<Map<String, dynamic>> obtenirEstadistiques() async {
     final db = await _db;
 
@@ -163,7 +163,7 @@ class PartidaDao {
     };
   }
 
-  // Calculem les estadístiques de cada jugador
+  //Calculem les estadístiques de cada jugador
   Future<List<Map<String, Object?>>>
   obtenirEstadistiquesJugadors() async {
     final db = await _db;
@@ -181,7 +181,7 @@ class PartidaDao {
     ''');
   }
 
-  // Obtenim la millor puntuació d'un jugador
+  //Obtenim la millor puntuació d'un jugador
   Future<int> obtenirMillorPuntuacio(int idUsuari) async {
     final db = await _db;
 
@@ -194,19 +194,17 @@ class PartidaDao {
     return (resultat.first['millor'] as int?) ?? 0;
   }
 
-  // Finalitzem una partida amb una transacció
+  //Finalitzem una partida amb una transacció
   Future<void> finalitzarPartida(Partida partida) async {
     final db = await _db;
 
     await db.transaction((txn) async {
 
-      // Guardem la partida finalitzada a l'historial
       await txn.insert(
         'partidas',
         partida.toMap(),
       );
 
-      // Eliminem només la partida guardada de l'usuari actual
       await txn.delete(
         'partida_guardada',
         where: 'id_usuario = ?',

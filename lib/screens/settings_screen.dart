@@ -19,19 +19,18 @@ class SettingsScreen extends StatefulWidget {
 
 class _SettingsScreenState extends State<SettingsScreen> {
 
-  // DAO per gestionar l'historial de SQLite
   final PartidaDao _partidaDao = PartidaDao();
 
-  // Tema seleccionat per l'usuari
+  //Tema seleccionat per l'usuari
   late ThemeMode _modeTema;
 
-  // Color seleccionat per a les fitxes
+  //Color seleccionat per a les fitxes
   late Color _colorSeleccionat;
 
-  // Evitem executar diverses eliminacions alhora
+  //Evitem executar diverses eliminacions alhora
   bool _eliminantHistorial = false;
 
-  // Colors disponibles
+  //Colors disponibles
   final List<Color> _colorsDisponibles = [
     Colors.orange,
     Colors.blue,
@@ -43,7 +42,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     Colors.amber,
   ];
 
-  // Valors de les fitxes que mostrem a la vista prèvia
+  //Valors de les fitxes que mostrem a la vista prèvia
   final List<int> _valorsFitxes = [
     2, 4, 8, 16,
     32, 64, 128, 256,
@@ -54,12 +53,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
   void initState() {
     super.initState();
 
-    // Recuperem les preferències actuals
     _modeTema = temaActual.value;
     _colorSeleccionat = colorFitxes.value;
   }
 
-  // Canviem el tema de l'aplicació
+  //Canviem el tema de l'aplicació
   Future<void> _canviarTema(ThemeMode nouTema) async {
 
     final ThemeMode temaAnterior = _modeTema;
@@ -68,17 +66,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
       _modeTema = nouTema;
     });
 
-    // Actualitzem immediatament tota l'aplicació
     temaActual.value = nouTema;
 
     try {
-      // Guardem el tema a SharedPreferences
       await PreferenciesService.guardarModeTema(nouTema);
 
     } catch (error) {
       if (!mounted) return;
 
-      // Recuperem el valor anterior si falla
+      //Recuperem el valor anterior si falla
       setState(() {
         _modeTema = temaAnterior;
       });
@@ -91,7 +87,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     }
   }
 
-  // Canviem el color de les fitxes
+  //Canviem el color de les fitxes
   Future<void> _canviarColor(Color nouColor) async {
 
     final Color colorAnterior = _colorSeleccionat;
@@ -100,11 +96,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
       _colorSeleccionat = nouColor;
     });
 
-    // Actualitzem el color immediatament
     colorFitxes.value = nouColor;
 
     try {
-      // Guardem el color a SharedPreferences
       await PreferenciesService.guardarColorFitxes(
         nouColor,
       );
@@ -112,7 +106,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
     } catch (error) {
       if (!mounted) return;
 
-      // Recuperem el color anterior si falla
       setState(() {
         _colorSeleccionat = colorAnterior;
       });
@@ -125,7 +118,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
     }
   }
 
-  // Mostrem missatges informatius
   void _mostrarMissatge(String missatge) {
     if (!mounted) return;
 
@@ -136,10 +128,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  // Recuperem la configuració inicial
+  //Recuperem la configuració inicial
   Future<void> _restablirConfiguracio() async {
 
-    // Tema del sistema i color taronja
     await _canviarTema(ThemeMode.system);
 
     if (!mounted) return;
@@ -153,7 +144,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  // Confirmem abans de buidar tot l'historial
+  //Confirmem abans de buidar tot l'historial
   Future<void> _confirmarBuidarHistorial() async {
 
     if (_eliminantHistorial) return;
@@ -174,7 +165,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     await _buidarHistorial();
   }
 
-  // Eliminem l'historial de l'usuari actual
+  //Eliminem l'historial de l'usuari actual
   Future<void> _buidarHistorial() async {
 
     setState(() {
@@ -182,7 +173,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
     });
 
     try {
-      // Eliminem només les partides del compte actual
       await _partidaDao.buidarHistorial(
         widget.usuari.idUsuari!,
       );
@@ -209,14 +199,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
     }
   }
 
-  // Triem text blanc o negre segons el color de fons
+  //Triem text blanc o negre segons el color de fons
   Color _colorText(Color color) {
     return color.computeLuminance() > 0.179
         ? Colors.black
         : Colors.white;
   }
 
-  // Construïm una opció de color
+  //Construïm una opció de color
   Widget _construirOpcioColor(Color color) {
 
     final bool seleccionat =
@@ -283,7 +273,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
         children: [
 
-          // Apartat del tema
           const Text(
             'Tema de l\'aplicació',
             style: TextStyle(
@@ -304,7 +293,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
             height: AppTheme.espaiMitja,
           ),
 
-          // RadioGroup gestiona el tema seleccionat
           RadioGroup<ThemeMode>(
             groupValue: _modeTema,
             onChanged: (ThemeMode? nouTema) {
@@ -362,7 +350,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
             height: AppTheme.espaiMitja,
           ),
 
-          // Apartat de personalització de colors
           const Text(
             'Color de les fitxes',
             style: TextStyle(
@@ -383,7 +370,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
             height: AppTheme.espaiGran,
           ),
 
-          // Mostrem tots els colors disponibles
           Wrap(
             spacing: AppTheme.espaiMitja,
             runSpacing: AppTheme.espaiMitja,
@@ -403,7 +389,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
             height: AppTheme.espaiMitja,
           ),
 
-          // Apartat de vista prèvia
           const Text(
             'Vista prèvia',
             style: TextStyle(
@@ -424,16 +409,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
             height: AppTheme.espaiMitja,
           ),
 
-          // Mostrem totes les tonalitats de les fitxes
           GridView.builder(
 
-            // La graella ocupa només l'espai necessari
             shrinkWrap: true,
 
-            // Evitem tenir dos desplaçaments a la pantalla
             physics: const NeverScrollableScrollPhysics(),
 
-            // Mostrem quatre fitxes per fila
             gridDelegate:
             const SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 4,
@@ -441,10 +422,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
               mainAxisSpacing: AppTheme.espaiPetit,
             ),
 
-            // Nombre total de fitxes
             itemCount: _valorsFitxes.length,
 
-            // Reutilitzem el mateix widget que al joc
+            //Reutilitzem el mateix widget que al joc
             itemBuilder: (context, index) {
               return TileWidget(
                 valor: _valorsFitxes[index],
@@ -457,7 +437,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
             height: AppTheme.espaiGran,
           ),
 
-          // Recuperem els valors inicials
           OutlinedButton.icon(
             onPressed: _restablirConfiguracio,
             icon: const Icon(Icons.restore),
@@ -476,7 +455,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
             height: AppTheme.espaiMitja,
           ),
 
-          // Apartat de gestió de dades
           const Text(
             'Gestió de dades',
             style: TextStyle(
@@ -498,7 +476,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
             height: AppTheme.espaiMitja,
           ),
 
-          // Eliminació amb confirmació
           OutlinedButton.icon(
             onPressed: _eliminantHistorial
                 ? null

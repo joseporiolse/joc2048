@@ -29,13 +29,12 @@ class GameScreen extends StatefulWidget {
 class _GameScreenState extends State<GameScreen>
     with WidgetsBindingObserver {
 
-  // Serveis i accés a SQLite
   final JocService _joc = JocService();
   final PartidaDao _partidaDao = PartidaDao();
   final PartidaGuardadaDao _guardadaDao =
   PartidaGuardadaDao();
 
-  // Conservem el focus del teclat durant tota la pantalla
+  //Mantenim el focus del teclat
   final FocusNode _focusNode = FocusNode();
 
   Timer? _temporitzador;
@@ -50,10 +49,10 @@ class _GameScreenState extends State<GameScreen>
   bool _dialogObert = false;
   bool _victoriaMostrada = false;
 
-  // Cadena d'operacions per evitar conflictes a SQLite
+  //Guardem les partides en ordre
   Future<void> _operacionsGuardat = Future<void>.value();
 
-  // Dades necessàries per desfer un moviment
+  //Dades necessàries per desfer un moviment
   List<int>? _taulerAnterior;
   int _puntuacioAnterior = 0;
   int _movimentsAnteriors = 0;
@@ -76,7 +75,7 @@ class _GameScreenState extends State<GameScreen>
     super.dispose();
   }
 
-  // Guardem automàticament quan sortim de l'aplicació
+  //Guardem automàticament quan sortim de l'aplicació
   @override
   void didChangeAppLifecycleState(
       AppLifecycleState state,
@@ -105,7 +104,7 @@ class _GameScreenState extends State<GameScreen>
     }
   }
 
-  // Inicialitzem el joc i comprovem les dades guardades
+  //Carreguem o iniciem la partida
   Future<void> _inicialitzarJoc() async {
     try {
       _millorPuntuacio =
@@ -120,7 +119,7 @@ class _GameScreenState extends State<GameScreen>
 
       if (widget.continuarPartida && guardada != null) {
 
-        // Recuperem el tauler, la puntuació i el temps
+        //Recuperem el tauler, la puntuació i el temps
         _joc.carregarPartida(
           guardada.tauler,
           guardada.puntuacio,
@@ -129,7 +128,7 @@ class _GameScreenState extends State<GameScreen>
 
         _segons = guardada.segonsTranscorreguts;
 
-        // Si ja havíem arribat a 2048, no repetim l'avís
+        //Si ja havíem arribat a 2048, no repetim l'avís
         _victoriaMostrada = _joc.haGuanyat();
 
       } else if (widget.continuarPartida) {
@@ -143,7 +142,7 @@ class _GameScreenState extends State<GameScreen>
 
       } else {
 
-        // Abans de començar, comprovem si perdrem un guardat
+        //Abans de començar, comprovem si perdrem un guardat
         if (guardada != null) {
           final bool? confirmar = await showDialog<bool>(
             context: context,
@@ -182,7 +181,6 @@ class _GameScreenState extends State<GameScreen>
           await _guardadaDao.eliminar(_idUsuari);
         }
 
-        // Creem un tauler nou amb dues fitxes
         _joc.iniciarPartida();
       }
 
@@ -205,7 +203,7 @@ class _GameScreenState extends State<GameScreen>
     }
   }
 
-  // Iniciem el cronòmetre
+  //Iniciem el cronòmetre
   void _iniciarTemporitzador() {
     _temporitzador?.cancel();
 
@@ -227,7 +225,7 @@ class _GameScreenState extends State<GameScreen>
     );
   }
 
-  // Convertim els segons en minuts i segons
+  //Convertim els segons en minuts i segons
   String _formatarTemps() {
     final int minuts = _segons ~/ 60;
     final int segons = _segons % 60;
@@ -236,7 +234,6 @@ class _GameScreenState extends State<GameScreen>
         '${segons.toString().padLeft(2, '0')}';
   }
 
-  // Mostrem missatges a la pantalla
   void _mostrarMissatge(String missatge) {
     if (!mounted) return;
 
@@ -245,8 +242,8 @@ class _GameScreenState extends State<GameScreen>
     );
   }
 
-  // Guardem una còpia de l'estat actual
-  // Les operacions s'executen en ordre
+  //Guardem una còpia de l'estat actual
+  //Les operacions s'executen en ordre
   Future<bool> _guardarPartida() async {
     if (_carregant || _finalitzada) return false;
 
@@ -280,7 +277,7 @@ class _GameScreenState extends State<GameScreen>
     return correcte;
   }
 
-  // Guardem la partida i tornem al menú principal
+  //Guardem la partida i tornem al menú principal
   Future<void> _guardarISortir() async {
     if (_carregant || _finalitzada || _sortint || _dialogObert) return;
 
@@ -303,19 +300,19 @@ class _GameScreenState extends State<GameScreen>
     }
   }
 
-  // Esperem que acabin els guardats pendents
+  //Esperem que acabin els guardats pendents
   Future<void> _esperarGuardats() async {
     await _operacionsGuardat;
   }
 
-  // Guardem les dades abans d'un moviment
+  //Guardem les dades abans d'un moviment
   void _prepararDesfer() {
     _taulerAnterior = List<int>.from(_joc.tauler);
     _puntuacioAnterior = _joc.puntuacio;
     _movimentsAnteriors = _joc.moviments;
   }
 
-  // Recuperem el tauler anterior
+  //Recuperem el tauler anterior
   void _desferMoviment() {
     if (_taulerAnterior == null ||
         _finalitzada ||
@@ -337,7 +334,7 @@ class _GameScreenState extends State<GameScreen>
     _mostrarMissatge('Moviment desfet.');
   }
 
-  // Gestionem els moviments del 2048
+  //Gestionem els moviments del 2048
   void _moure(Direccio direccio) {
     if (_carregant ||
         _finalitzada ||
@@ -361,26 +358,26 @@ class _GameScreenState extends State<GameScreen>
       }
     });
 
-    // Comprovem primer si el jugador ha perdut
+    //Comprovem primer si el jugador ha perdut
     if (_joc.haPerdut()) {
       _finalitzarPartida(_joc.haGuanyat());
       return;
     }
 
-    // Mostrem la victòria una sola vegada
+    //Mostrem la victòria una sola vegada
     if (_joc.haGuanyat() && !_victoriaMostrada) {
       _victoriaMostrada = true;
       _mostrarVictoria();
     }
   }
 
-  // Funcions per als controls del teclat
+  //Funcions per als controls del teclat
   void _moureAmunt() => _moure(Direccio.amunt);
   void _moureAvall() => _moure(Direccio.avall);
   void _moureEsquerra() => _moure(Direccio.esquerra);
   void _moureDreta() => _moure(Direccio.dreta);
 
-  // Controls amb el teclat
+  //Controls amb el teclat
   void _gestionarTeclat(KeyEvent event) {
     if (event is! KeyDownEvent) return;
 
@@ -398,7 +395,7 @@ class _GameScreenState extends State<GameScreen>
     }
   }
 
-  // Doble toc sobre la puntuació
+  //Doble toc sobre la puntuació
   void _mostrarInformacioPuntuacio() {
     _mostrarMissatge(
       'Puntuació: ${_joc.puntuacio} · '
@@ -407,7 +404,7 @@ class _GameScreenState extends State<GameScreen>
     );
   }
 
-  // Reiniciem el joc amb confirmació
+  //Reiniciem el joc amb confirmació
   Future<void> _reiniciarPartida() async {
     if (_carregant || _finalitzada || _sortint) return;
 
@@ -444,7 +441,7 @@ class _GameScreenState extends State<GameScreen>
 
     if (confirmar == true) {
       try {
-        // Evitem que un guardat anterior reaparegui
+        //Evitem que un guardat anterior reaparegui
         await _esperarGuardats();
         await _guardadaDao.eliminar(_idUsuari);
 
@@ -468,7 +465,7 @@ class _GameScreenState extends State<GameScreen>
     _iniciarTemporitzador();
   }
 
-  // Diàleg quan arribem a 2048
+  //Diàleg quan arribem a 2048
   Future<void> _mostrarVictoria() async {
     _dialogObert = true;
     _temporitzador?.cancel();
@@ -510,7 +507,7 @@ class _GameScreenState extends State<GameScreen>
     }
   }
 
-  // Confirmem si volem finalitzar la partida actual
+  //Confirmem si volem finalitzar la partida actual
   Future<void> _confirmarFinalitzacio() async {
     if (_carregant || _finalitzada || _sortint || _dialogObert) return;
 
@@ -550,7 +547,7 @@ class _GameScreenState extends State<GameScreen>
     }
   }
 
-  // Guardem el resultat final a SQLite
+  //Guardem el resultat final a SQLite
   Future<void> _finalitzarPartida(bool victoria) async {
     if (_finalitzada || _sortint) return;
 
@@ -558,7 +555,6 @@ class _GameScreenState extends State<GameScreen>
     _temporitzador?.cancel();
 
     try {
-      // Esperem qualsevol guardat anterior
       await _esperarGuardats();
 
       final Partida partida = Partida(
@@ -571,7 +567,7 @@ class _GameScreenState extends State<GameScreen>
         midaTauler: 4,
       );
 
-      // Registrem la partida i eliminem el guardat
+      //Registrem la partida i eliminem el guardat
       await _partidaDao.finalitzarPartida(partida);
 
       if (!mounted) return;
@@ -612,7 +608,7 @@ class _GameScreenState extends State<GameScreen>
 
       if (!mounted) return;
       if (tornarAJugar == true) {
-        // Reiniciem el joc sense perdre el resultat anterior
+        //Reiniciem el joc sense perdre el resultat anterior
         setState(() {
           _joc.iniciarPartida();
           _segons = 0;
@@ -643,7 +639,7 @@ class _GameScreenState extends State<GameScreen>
     }
   }
 
-  // Permetem sortir després de completar les operacions
+  //Permetem sortir després de completar les operacions
   void _sortirPantalla() {
     if (!mounted) return;
 
@@ -658,7 +654,7 @@ class _GameScreenState extends State<GameScreen>
     });
   }
 
-  // Confirmem si volem guardar, finalitzar, descartar o cancel·lar
+  //Opcions abans de sortir del joc
   Future<void> _confirmarSortida() async {
     if (_carregant || _sortint || _finalitzada || _dialogObert) return;
 
@@ -710,7 +706,6 @@ class _GameScreenState extends State<GameScreen>
       return;
     }
 
-    // Finalitzem abans de marcar que estem sortint
     if (opcio == 'finalitzar') {
       _dialogObert = false;
       await _finalitzarPartida(_joc.haGuanyat());
@@ -757,7 +752,7 @@ class _GameScreenState extends State<GameScreen>
     _sortirPantalla();
   }
 
-  // Gestionem el botó de tornar enrere
+  //Gestionem el botó de tornar enrere
   void _gestionarSortida(
       bool didPop,
       Object? resultat,
@@ -767,7 +762,7 @@ class _GameScreenState extends State<GameScreen>
     }
   }
 
-  // Menú d'opcions del joc
+  //Menú d'opcions del joc
   void _mostrarOpcions() {
     if (_carregant || _finalitzada || _sortint) return;
 
@@ -846,7 +841,7 @@ class _GameScreenState extends State<GameScreen>
             padding: const EdgeInsets.all(AppTheme.espaiMitja),
             child: LayoutBuilder(
               builder: (context, mida) {
-                // En horitzontal posem el tauler al costat de les dades
+                //En horitzontal posem el tauler al costat de les dades
                 if (mida.maxWidth > mida.maxHeight) {
                   return Row(
                     children: [
@@ -867,7 +862,7 @@ class _GameScreenState extends State<GameScreen>
                   );
                 }
 
-                // En vertical adaptem el tauler sense fer scroll
+                //En vertical adaptem el tauler sense fer scroll
                 return Center(
                   child: ConstrainedBox(
                     constraints: const BoxConstraints(maxWidth: 500),
@@ -890,7 +885,7 @@ class _GameScreenState extends State<GameScreen>
     );
   }
 
-  // Mostrem el jugador, les puntuacions i el temps
+  //Mostrem el jugador, les puntuacions i el temps
   Widget _construirDades() {
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -921,7 +916,7 @@ class _GameScreenState extends State<GameScreen>
     );
   }
 
-  // Adaptem el tauler a l'espai disponible i mantenim els gestos
+  //Adaptem el tauler a la pantalla
   Widget _construirTauler() {
     return Center(
       child: AspectRatio(
@@ -946,7 +941,6 @@ class _GameScreenState extends State<GameScreen>
     );
   }
 
-  // Botó per guardar i tornar a l'inici
   Widget _construirBotoGuardar() {
     return SizedBox(
       width: double.infinity,

@@ -2,19 +2,14 @@ import 'package:flutter/material.dart';
 
 class ConfirmDialog extends StatelessWidget {
 
-  // Títol del diàleg
   final String titol;
 
-  // Missatge que volem mostrar
   final String missatge;
 
-  // Text del botó de confirmació
   final String textConfirmar;
 
-  // Text del botó de cancel·lació
   final String textCancelar;
 
-  // Indica si l'acció és perillosa
   final bool esPerillos;
 
   const ConfirmDialog({
@@ -26,7 +21,7 @@ class ConfirmDialog extends StatelessWidget {
     this.esPerillos = false,
   });
 
-  // Mostrem el diàleg i retornem la resposta
+  //Mostrem el diàleg i retornem la resposta
   static Future<bool> mostrar(
       BuildContext context, {
         required String titol,
@@ -50,16 +45,15 @@ class ConfirmDialog extends StatelessWidget {
       },
     );
 
-    // Si es tanca sense confirmar, retornem false
     return resultat ?? false;
   }
 
-  // Tanquem el diàleg sense confirmar
+  //Tanquem el diàleg sense confirmar
   void _cancelar(BuildContext context) {
     Navigator.pop(context, false);
   }
 
-  // Tanquem el diàleg confirmant l'acció
+  //Tanquem el diàleg confirmant l'acció
   void _confirmar(BuildContext context) {
     Navigator.pop(context, true);
   }
@@ -67,18 +61,14 @@ class ConfirmDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
 
-    // Obtenim els colors del tema
     final colors = Theme.of(context).colorScheme;
 
     return AlertDialog(
 
-      // Títol del diàleg
       title: Text(titol),
 
-      // Missatge de confirmació
       content: Text(missatge),
 
-      // Botons del diàleg
       actions: [
 
         TextButton(

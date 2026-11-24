@@ -8,7 +8,6 @@ class Partida {
   String data;
   int midaTauler;
 
-  // Constructor de la partida
   Partida({
     this.idPartida,
     required this.idUsuari,
@@ -20,7 +19,7 @@ class Partida {
     this.midaTauler = 4,
   });
 
-  // Convertim la partida en un Map per guardar-la a SQLite
+  //Convertim la partida a Map
   Map<String, dynamic> toMap() {
     return {
       'id_partida': idPartida,
@@ -34,7 +33,7 @@ class Partida {
     };
   }
 
-  // Convertim les dades de SQLite en un objecte Partida
+  //Recuperem la partida des del Map
   factory Partida.fromMap(Map<String, dynamic> map) {
     return Partida(
       idPartida: map['id_partida'],

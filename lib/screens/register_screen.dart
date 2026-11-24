@@ -13,7 +13,6 @@ class RegisterScreen extends StatefulWidget {
 
 class _RegisterScreenState extends State<RegisterScreen> {
 
-  // Controladors dels camps del formulari
   final TextEditingController _controladorUsuari =
   TextEditingController();
 
@@ -26,14 +25,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final TextEditingController _controladorConfirmacio =
   TextEditingController();
 
-  // DAO per gestionar els usuaris
   final UsuariDao _usuariDao = UsuariDao();
 
-  // Control de l'estat de la pantalla
   bool _carregant = false;
   bool _mostrarContrasena = false;
 
-  // Alliberem els controladors
   @override
   void dispose() {
     _controladorUsuari.dispose();
@@ -43,14 +39,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
     super.dispose();
   }
 
-  // Mostrem o amaguem la contrasenya
+  //Mostrem o amaguem la contrasenya
   void _canviarVisibilitat() {
     setState(() {
       _mostrarContrasena = !_mostrarContrasena;
     });
   }
 
-  // Mostrem un missatge amb SnackBar
   void _mostrarMissatge(String missatge) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -59,7 +54,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     );
   }
 
-  // Validem les dades i registrem l'usuari
+  //Validem les dades i registrem l'usuari
   Future<void> _registrar() async {
 
     final String nom = _controladorUsuari.text.trim();
@@ -67,7 +62,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
     final String contrasena = _controladorContrasena.text;
     final String confirmacio = _controladorConfirmacio.text;
 
-    // Comprovem que tots els camps estiguin emplenats
     if (nom.isEmpty ||
         email.isEmpty ||
         contrasena.isEmpty ||
@@ -76,7 +70,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
       return;
     }
 
-    // Comprovem el format del correu electrònic
     final RegExp expressioEmail =
     RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$');
 
@@ -85,13 +78,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
       return;
     }
 
-    // Comprovem que les contrasenyes coincideixin
     if (contrasena != confirmacio) {
       _mostrarMissatge('Les contrasenyes no coincideixen.');
       return;
     }
 
-    // Exigim una longitud mínima de contrasenya
     if (contrasena.length < 8) {
       _mostrarMissatge(
         'La contrasenya ha de tenir almenys 8 caràcters.',
@@ -105,7 +96,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
     try {
 
-      // Comprovem si el nom d'usuari ja existeix
       final Usuari? existent =
       await _usuariDao.obtenirPerNom(nom);
 
@@ -118,7 +108,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
         return;
       }
 
-      // Creem l'usuari amb la data actual en format ISO
       final Usuari usuari = Usuari(
         usuari: nom,
         email: email,
@@ -126,8 +115,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
         dataRegistre: DateTime.now().toIso8601String(),
       );
 
-      // Guardem l'usuari a SQLite
-      // El DAO aplica BCrypt a la contrasenya
       await _usuariDao.registrar(usuari);
 
       if (!mounted) return;
@@ -136,14 +123,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
         'Usuari registrat correctament!',
       );
 
-      // Tornem a la pantalla d'inici de sessió
       Navigator.pop(context);
 
     } on DatabaseException catch (error) {
 
       if (!mounted) return;
 
-      // Detectem errors de restricció UNIQUE
+      //Detectem errors de restricció UNIQUE
       if (error.isUniqueConstraintError()) {
         _mostrarMissatge(
           'El nom d\'usuari o el correu ja estan registrats.',
@@ -195,7 +181,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
 
-                // Icona de registre
                 Icon(
                   Icons.person_add,
                   size: 70,
@@ -225,7 +210,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   height: AppTheme.espaiGran,
                 ),
 
-                // Nom d'usuari
                 TextField(
                   controller: _controladorUsuari,
                   textInputAction: TextInputAction.next,
@@ -240,7 +224,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   height: AppTheme.espaiMitja,
                 ),
 
-                // Correu electrònic
                 TextField(
                   controller: _controladorEmail,
                   keyboardType: TextInputType.emailAddress,
@@ -256,7 +239,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   height: AppTheme.espaiMitja,
                 ),
 
-                // Contrasenya
                 TextField(
                   controller: _controladorContrasena,
                   obscureText: !_mostrarContrasena,
@@ -280,7 +262,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   height: AppTheme.espaiMitja,
                 ),
 
-                // Confirmació de la contrasenya
                 TextField(
                   controller: _controladorConfirmacio,
                   obscureText: !_mostrarContrasena,
@@ -296,7 +277,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   height: AppTheme.espaiGran,
                 ),
 
-                // Botó per crear el compte
                 ElevatedButton(
                   onPressed: _carregant ? null : _registrar,
 
@@ -315,7 +295,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   height: AppTheme.espaiMitja,
                 ),
 
-                // Tornem a l'inici de sessió
                 TextButton(
                   onPressed: _carregant
                       ? null

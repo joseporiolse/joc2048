@@ -3,13 +3,10 @@ import '../services/app_theme.dart';
 
 class ScoreCard extends StatelessWidget {
 
-  // Títol que apareixerà a la targeta
   final String titol;
 
-  // Valor numèric que volem mostrar
   final int valor;
 
-  // Icona opcional de la targeta
   final IconData? icona;
 
   const ScoreCard({
@@ -22,13 +19,11 @@ class ScoreCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
 
-    // Obtenim els colors del tema actual
     final colors = Theme.of(context).colorScheme;
 
     return Card(
       elevation: 2,
 
-      // Donem forma arrodonida a la targeta
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(
           AppTheme.radiVores,
@@ -44,7 +39,6 @@ class ScoreCard extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
 
-            // Mostrem la icona si s'ha proporcionat
             if (icona != null)
               Icon(
                 icona,
@@ -57,7 +51,6 @@ class ScoreCard extends StatelessWidget {
                 height: AppTheme.espaiPetit,
               ),
 
-            // Mostrem el títol
             Text(
               titol,
               textAlign: TextAlign.center,
@@ -72,7 +65,6 @@ class ScoreCard extends StatelessWidget {
               height: AppTheme.espaiPetit,
             ),
 
-            // Mostrem el valor numèric
             AnimatedSwitcher(
               duration: const Duration(
                 milliseconds: 200,

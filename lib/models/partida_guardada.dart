@@ -9,7 +9,6 @@ class PartidaGuardada {
   int moviments;
   int segonsTranscorreguts;
 
-  // Constructor de la partida guardada
   PartidaGuardada({
     int? id,
     required this.idUsuari,
@@ -19,7 +18,7 @@ class PartidaGuardada {
     required this.segonsTranscorreguts,
   }) : id = id ?? idUsuari;
 
-  // Convertim la partida en un Map per guardar-la a SQLite
+  //Convertim la partida a Map
   Map<String, dynamic> toMap() {
     return {
       'id': id,
@@ -31,7 +30,7 @@ class PartidaGuardada {
     };
   }
 
-  // Convertim les dades de SQLite en un objecte PartidaGuardada
+  //Recuperem la partida guardada des del Map
   factory PartidaGuardada.fromMap(Map<String, dynamic> map) {
     return PartidaGuardada(
       id: map['id'],

@@ -17,20 +17,16 @@ class RankingScreen extends StatefulWidget {
 
 class _RankingScreenState extends State<RankingScreen> {
 
-  // DAO per consultar SQLite
   final PartidaDao _partidaDao = PartidaDao();
 
-  // Controlador del cercador
   final TextEditingController _controladorCerca =
   TextEditingController();
 
-  // Consultes asíncrones
   late Future<List<Partida>> _futurRanking;
   late Future<Map<String, dynamic>> _futurEstadistiques;
   late Future<List<Map<String, dynamic>>>
   _futurEstadistiquesJugadors;
 
-  // Filtres actius
   String _nomJugador = '';
   int? _filtreFitxa;
 
@@ -46,7 +42,7 @@ class _RankingScreenState extends State<RankingScreen> {
     super.dispose();
   }
 
-  // Carreguem les dades mantenint els filtres
+  //Carreguem les dades mantenint els filtres
   void _carregarDades() {
     setState(() {
       _futurRanking = _obtenirRankingFiltrat();
@@ -59,32 +55,30 @@ class _RankingScreenState extends State<RankingScreen> {
     });
   }
 
-  // Obtenim les partides segons els filtres seleccionats
+  //Obtenim les partides segons els filtres seleccionats
   Future<List<Partida>> _obtenirRankingFiltrat() async {
 
     List<Partida> partides;
 
-    // Apliquem els filtres directament a SQLite
+    //Apliquem els filtres directament a SQLite
     if (_nomJugador.isNotEmpty || _filtreFitxa != null) {
       partides = await _partidaDao.filtrarHistorial(
         _nomJugador,
         _filtreFitxa,
       );
     } else {
-      // Sense filtres, obtenim el rànquing principal
       partides = await _partidaDao.obtenirRanking();
     }
 
-    // Ordenem les partides de major a menor puntuació
     partides.sort(
           (a, b) => b.puntuacio.compareTo(a.puntuacio),
     );
 
-    // Limitem el rànquing a les 10 millors partides
+    //Limitem el rànquing a les 10 millors partides
     return partides.take(10).toList();
   }
 
-  // Actualitzem el rànquing arrossegant cap avall
+  //Actualitzem el rànquing arrossegant cap avall
   Future<void> _actualitzarDades() async {
     _carregarDades();
 
@@ -95,23 +89,22 @@ class _RankingScreenState extends State<RankingScreen> {
         _futurEstadistiquesJugadors,
       ]);
     } catch (error) {
-      // AsyncDataView mostrarà l'error corresponent.
     }
   }
 
-  // Apliquem el filtre pel nom del jugador
+  //Apliquem el filtre pel nom del jugador
   void _cercarJugador() {
     _nomJugador = _controladorCerca.text.trim();
     _carregarDades();
   }
 
-  // Canviem el filtre de fitxa màxima
+  //Canviem el filtre de fitxa màxima
   void _canviarFiltre(int? valor) {
     _filtreFitxa = valor;
     _carregarDades();
   }
 
-  // Eliminem tots els filtres
+  //Eliminem tots els filtres
   void _netejarFiltres() {
     _controladorCerca.clear();
 
@@ -121,7 +114,7 @@ class _RankingScreenState extends State<RankingScreen> {
     _carregarDades();
   }
 
-  // Convertim segons en hores i minuts
+  //Convertim segons en hores i minuts
   String _formatarTemps(int segonsTotals) {
     final int hores = segonsTotals ~/ 3600;
     final int minuts = (segonsTotals % 3600) ~/ 60;
@@ -133,14 +126,13 @@ class _RankingScreenState extends State<RankingScreen> {
     return '$minuts min';
   }
 
-  // Convertim un valor SQLite en enter
   int _obtenirEnter(dynamic valor) {
     if (valor is int) return valor;
     if (valor is num) return valor.toInt();
     return 0;
   }
 
-  // Construïm les partides del rànquing
+  //Construïm les partides del rànquing
   Widget _construirRanking(
       BuildContext context,
       List<Partida> partides,
@@ -159,7 +151,6 @@ class _RankingScreenState extends State<RankingScreen> {
     return Column(
       children: [
 
-        // Mostrem la posició de cada partida
         for (int index = 0; index < partides.length; index++)
 
           PartidaListItem(
@@ -172,7 +163,7 @@ class _RankingScreenState extends State<RankingScreen> {
     );
   }
 
-  // Construïm les estadístiques globals
+  //Construïm les estadístiques globals
   Widget _construirEstadistiques(
       BuildContext context,
       Map<String, dynamic> dades,
@@ -259,7 +250,7 @@ class _RankingScreenState extends State<RankingScreen> {
     );
   }
 
-  // Construïm les estadístiques agrupades per jugador
+  //Construïm les estadístiques agrupades per jugador
   Widget _construirEstadistiquesJugadors(
       BuildContext context,
       List<Map<String, dynamic>> jugadors,
@@ -290,7 +281,6 @@ class _RankingScreenState extends State<RankingScreen> {
           height: AppTheme.espaiMitja,
         ),
 
-        // Mostrem les dades de cada jugador
         for (final jugador in jugadors)
 
           Padding(
@@ -349,7 +339,6 @@ class _RankingScreenState extends State<RankingScreen> {
               height: AppTheme.espaiMitja,
             ),
 
-            // Cercador de jugadors
             TextField(
               controller: _controladorCerca,
               textInputAction: TextInputAction.search,
@@ -375,7 +364,6 @@ class _RankingScreenState extends State<RankingScreen> {
               height: AppTheme.espaiMitja,
             ),
 
-            // Filtre per fitxa màxima
             DropdownButtonFormField<int>(
               key: ValueKey(_filtreFitxa),
               initialValue: _filtreFitxa,
@@ -440,7 +428,6 @@ class _RankingScreenState extends State<RankingScreen> {
               height: AppTheme.espaiMitja,
             ),
 
-            // Rànquing filtrat
             AsyncDataView<List<Partida>>(
               futur: _futurRanking,
               missatgeCarrega: 'Carregant rànquing...',
@@ -452,7 +439,6 @@ class _RankingScreenState extends State<RankingScreen> {
               height: AppTheme.espaiGran,
             ),
 
-            // Estadístiques globals
             AsyncDataView<Map<String, dynamic>>(
               futur: _futurEstadistiques,
               missatgeCarrega:
@@ -466,7 +452,6 @@ class _RankingScreenState extends State<RankingScreen> {
               height: AppTheme.espaiGran,
             ),
 
-            // Estadístiques per jugador
             AsyncDataView<List<Map<String, dynamic>>>(
               futur: _futurEstadistiquesJugadors,
               missatgeCarrega:

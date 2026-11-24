@@ -2,18 +2,18 @@ import 'package:flutter/material.dart';
 
 class AppTheme {
 
-  // Colors principals de l'aplicació
+  //Colors principals de l'aplicació
   static const Color colorPrincipal = Colors.deepOrange;
   static const Color colorSecundari = Colors.orange;
 
-  // Mides i espais que utilitzarem a les pantalles
+  //Mides i espais que utilitzarem a les pantalles
   static const double espaiPetit = 8;
   static const double espaiMitja = 16;
   static const double espaiGran = 24;
   static const double radiVores = 12;
   static const double midaSubtitol = 18;
 
-  // Tema clar de l'aplicació
+  //Tema clar de l'aplicació
   static final ThemeData temaClar = ThemeData(
     brightness: Brightness.light,
     useMaterial3: true,
@@ -43,7 +43,7 @@ class AppTheme {
     ),
   );
 
-  // Tema fosc de l'aplicació
+  //Tema fosc de l'aplicació
   static final ThemeData temaFosc = ThemeData(
     brightness: Brightness.dark,
     useMaterial3: true,
@@ -73,7 +73,7 @@ class AppTheme {
     ),
   );
 
-  // Obtenim el color d'una fitxa segons el seu valor
+  //Color segons el valor de la fitxa
   static Color obtenirColorFitxa(
       int valor,
       bool esFosc,
@@ -82,13 +82,12 @@ class AppTheme {
 
     switch (valor) {
 
-    // Color de les caselles buides
       case 0:
         return esFosc
             ? const Color(0xFF3A3A3A)
             : const Color(0xFFCDC1B4);
 
-    // Barregem el color seleccionat amb blanc
+    //Barregem el color seleccionat amb blanc
       case 2:
         return Color.lerp(
           Colors.white, colorPersonalitzat, 0.15,
@@ -114,11 +113,10 @@ class AppTheme {
           Colors.white, colorPersonalitzat, 0.75,
         )!;
 
-    // Utilitzem el color seleccionat sense modificar-lo
       case 64:
         return colorPersonalitzat;
 
-    // Barregem el color seleccionat amb negre
+    //Barregem el color seleccionat amb negre
       case 128:
         return Color.lerp(
           colorPersonalitzat, Colors.black, 0.10,
@@ -144,7 +142,6 @@ class AppTheme {
           colorPersonalitzat, Colors.black, 0.50,
         )!;
 
-    // Fitxes superiors a 2048
       default:
         return Color.lerp(
           colorPersonalitzat, Colors.black, 0.60,
@@ -152,40 +149,36 @@ class AppTheme {
     }
   }
 
-  // Obtenim el color del text segons el color de fons
+  //Color del text segons el fons
   static Color obtenirColorTextFitxa(
       int valor,
       bool esFosc,
       Color colorPersonalitzat,
       ) {
 
-    // Obtenim el color de fons de la fitxa
     final Color colorFons = obtenirColorFitxa(
       valor,
       esFosc,
       colorPersonalitzat,
     );
 
-    // Si el fons és clar, utilitzem text negre.
-    // Si el fons és fosc, utilitzem text blanc.
+    //Si el fons és clar, utilitzem text negre.
+    //Si el fons és fosc, utilitzem text blanc.
     return colorFons.computeLuminance() > 0.179
         ? Colors.black
         : Colors.white;
   }
 
-  // Estil del text dels títols
   static const TextStyle estilTitol = TextStyle(
     fontSize: 28,
     fontWeight: FontWeight.bold,
   );
 
-  // Estil del text de les puntuacions
   static const TextStyle estilPuntuacio = TextStyle(
     fontSize: 22,
     fontWeight: FontWeight.bold,
   );
 
-  // Estil del text de les fitxes
   static const TextStyle estilFitxa = TextStyle(
     fontSize: 24,
     fontWeight: FontWeight.bold,

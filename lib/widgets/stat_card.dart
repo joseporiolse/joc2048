@@ -3,16 +3,12 @@ import '../services/app_theme.dart';
 
 class StatCard extends StatelessWidget {
 
-  // Títol de l'estadística
   final String titol;
 
-  // Valor que volem mostrar
   final String valor;
 
-  // Icona de l'estadística
   final IconData icona;
 
-  // Color opcional de la icona
   final Color? colorIcona;
 
   const StatCard({
@@ -26,13 +22,11 @@ class StatCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
 
-    // Obtenim els colors del tema actual
     final colors = Theme.of(context).colorScheme;
 
     return Card(
       elevation: 2,
 
-      // Definim les vores arrodonides
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(
           AppTheme.radiVores,
@@ -49,7 +43,6 @@ class StatCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
 
-            // Icona de l'estadística
             Icon(
               icona,
               size: 30,
@@ -60,7 +53,6 @@ class StatCard extends StatelessWidget {
               height: AppTheme.espaiMitja,
             ),
 
-            // Mostrem el valor de l'estadística
             Text(
               valor,
               maxLines: 2,
@@ -74,7 +66,6 @@ class StatCard extends StatelessWidget {
               height: AppTheme.espaiPetit,
             ),
 
-            // Mostrem el títol
             Text(
               titol,
               maxLines: 2,

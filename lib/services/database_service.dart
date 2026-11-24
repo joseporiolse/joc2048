@@ -3,34 +3,31 @@ import 'package:path/path.dart';
 
 class DatabaseService {
 
-  // Guardem la base de dades per no crear una nova connexió cada vegada
+  //Reutilitzem la connexió a SQLite
   static Database? _database;
 
   static Future<Database> obtenirDatabase() async {
 
-    // Si ja tenim la base de dades la retornem
     if (_database != null) {
       return _database!;
     }
 
-    // Busquem la ruta on es guardarà la base de dades
     String ruta = await getDatabasesPath();
     String rutaCompleta = join(ruta, 'game2048.db');
 
-    // Obrim la base de dades i si no existeix la creem
     _database = await openDatabase(
       rutaCompleta,
       version: 3,
 
-      // Activem les claus foranes per relacionar les taules
+      //Activem les claus foranes per relacionar les taules
       onConfigure: (db) async {
         await db.execute('PRAGMA foreign_keys = ON');
       },
 
-      // Creem les taules quan es crea la base de dades
+      //Creem les taules quan es crea la base de dades
       onCreate: (db, version) async {
 
-        // Taula dels usuaris registrats
+        //Taula dels usuaris registrats
         await db.execute('''
           CREATE TABLE usuario(
             id_usuario INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -41,7 +38,7 @@ class DatabaseService {
           )
         ''');
 
-        // Taula de les partides finalitzades
+        //Taula de les partides finalitzades
         await db.execute('''
           CREATE TABLE partidas(
             id_partida INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -57,7 +54,7 @@ class DatabaseService {
           )
         ''');
 
-        // Cada usuari pot tenir una partida guardada
+        //Cada usuari pot tenir una partida guardada
         await db.execute('''
           CREATE TABLE partida_guardada(
             id INTEGER PRIMARY KEY,
@@ -73,10 +70,10 @@ class DatabaseService {
 
       },
 
-      // Actualitzem la base de dades sense perdre les dades existents
+      //Actualitzem la base de dades sense perdre les dades existents
       onUpgrade: (db, oldVersion, newVersion) async {
 
-        // Migració de la versió 1 a la versió 2
+        //Migració de la versió 1 a la versió 2
         if (oldVersion < 2) {
           await db.execute('''
             ALTER TABLE partidas
@@ -84,16 +81,16 @@ class DatabaseService {
           ''');
         }
 
-        // Migració a la versió 3
+        //Migració a la versió 3
         if (oldVersion < 3) {
 
-          // Canviem el nom de la taula antiga
+          //Canviem el nom de la taula antiga
           await db.execute('''
             ALTER TABLE partida_guardada
             RENAME TO partida_guardada_antiga
           ''');
 
-          // Creem la nova taula sense la restricció de l'id
+          //Creem la nova taula sense la restricció de l'id
           await db.execute('''
             CREATE TABLE partida_guardada(
               id INTEGER PRIMARY KEY,
@@ -107,8 +104,7 @@ class DatabaseService {
             )
           ''');
 
-          // Recuperem les dades de la taula antiga
-          // Utilitzem l'id de l'usuari com a id de la partida
+          //Recuperem les dades de la taula antiga
           await db.execute('''
             INSERT INTO partida_guardada(
               id,
@@ -128,7 +124,7 @@ class DatabaseService {
             FROM partida_guardada_antiga
           ''');
 
-          // Eliminem la taula antiga després de copiar les dades
+          //Eliminem la taula antiga després de copiar les dades
           await db.execute('''
             DROP TABLE partida_guardada_antiga
           ''');
@@ -138,7 +134,6 @@ class DatabaseService {
       },
     );
 
-    // Retornem la base de dades
     return _database!;
   }
 }
