@@ -5,6 +5,7 @@ import '../models/usuari.dart';
 import '../services/app_theme.dart';
 import '../services/preferencies_service.dart';
 import '../widgets/confirm_dialog.dart';
+import '../widgets/tile_widget.dart';
 
 class SettingsScreen extends StatefulWidget {
   final Usuari usuari;
@@ -40,6 +41,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
     Colors.teal,
     Colors.pink,
     Colors.amber,
+  ];
+
+  // Valors de les fitxes que mostrem a la vista prèvia
+  final List<int> _valorsFitxes = [
+    2, 4, 8, 16,
+    32, 64, 128, 256,
+    512, 1024, 2048, 4096,
   ];
 
   @override
@@ -104,6 +112,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     } catch (error) {
       if (!mounted) return;
 
+      // Recuperem el color anterior si falla
       setState(() {
         _colorSeleccionat = colorAnterior;
       });
@@ -132,6 +141,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
     // Tema del sistema i color taronja
     await _canviarTema(ThemeMode.system);
+
+    if (!mounted) return;
+
     await _canviarColor(Colors.orange);
 
     if (!mounted) return;
@@ -162,7 +174,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     await _buidarHistorial();
   }
 
-  // Eliminem l'historial complet de SQLite
+  // Eliminem l'historial de l'usuari actual
   Future<void> _buidarHistorial() async {
 
     setState(() {
@@ -170,8 +182,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
     });
 
     try {
-      // El DAO executa l'eliminació a SQLite
-      await _partidaDao.buidarHistorial(widget.usuari.idUsuari!);
+      // Eliminem només les partides del compte actual
+      await _partidaDao.buidarHistorial(
+        widget.usuari.idUsuari!,
+      );
 
       if (!mounted) return;
 
@@ -197,7 +211,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   // Triem text blanc o negre segons el color de fons
   Color _colorText(Color color) {
-    return color.computeLuminance() > 0.45
+    return color.computeLuminance() > 0.179
         ? Colors.black
         : Colors.white;
   }
@@ -389,7 +403,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             height: AppTheme.espaiMitja,
           ),
 
-          // Vista prèvia
+          // Apartat de vista prèvia
           const Text(
             'Vista prèvia',
             style: TextStyle(
@@ -399,33 +413,44 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
 
           const SizedBox(
+            height: AppTheme.espaiPetit,
+          ),
+
+          const Text(
+            'Així es mostraran les fitxes durant la partida.',
+          ),
+
+          const SizedBox(
             height: AppTheme.espaiMitja,
           ),
 
-          Center(
-            child: Container(
-              width: 110,
-              height: 110,
+          // Mostrem totes les tonalitats de les fitxes
+          GridView.builder(
 
-              decoration: BoxDecoration(
-                color: _colorSeleccionat,
+            // La graella ocupa només l'espai necessari
+            shrinkWrap: true,
 
-                borderRadius: BorderRadius.circular(
-                  AppTheme.radiVores,
-                ),
-              ),
+            // Evitem tenir dos desplaçaments a la pantalla
+            physics: const NeverScrollableScrollPhysics(),
 
-              alignment: Alignment.center,
-
-              child: Text(
-                '2048',
-                style: TextStyle(
-                  color: _colorText(_colorSeleccionat),
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
+            // Mostrem quatre fitxes per fila
+            gridDelegate:
+            const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 4,
+              crossAxisSpacing: AppTheme.espaiPetit,
+              mainAxisSpacing: AppTheme.espaiPetit,
             ),
+
+            // Nombre total de fitxes
+            itemCount: _valorsFitxes.length,
+
+            // Reutilitzem el mateix widget que al joc
+            itemBuilder: (context, index) {
+              return TileWidget(
+                valor: _valorsFitxes[index],
+                colorPersonalitzat: _colorSeleccionat,
+              );
+            },
           ),
 
           const SizedBox(
@@ -466,7 +491,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
           const Text(
             'Vols eliminar l\'historial de partides '
-                'guardades a la base de dades?',
+                'del teu compte?',
           ),
 
           const SizedBox(

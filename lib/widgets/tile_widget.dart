@@ -23,17 +23,18 @@ class TileWidget extends StatelessWidget {
     final bool esFosc =
         Theme.of(context).brightness == Brightness.dark;
 
-    // Obtenim el color de fons de la fitxa
+    // Obtenim el color de fons segons el valor de la fitxa
     final Color colorFons = AppTheme.obtenirColorFitxa(
       valor,
       esFosc,
       colorPersonalitzat,
     );
 
-    // Obtenim el color del text
+    // Obtenim el color del text segons el color de fons
     final Color colorText = AppTheme.obtenirColorTextFitxa(
       valor,
       esFosc,
+      colorPersonalitzat,
     );
 
     // Ajustem la mida del text segons el valor

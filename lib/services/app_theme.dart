@@ -80,45 +80,97 @@ class AppTheme {
       Color colorPersonalitzat,
       ) {
 
-    // Les caselles buides tenen un color diferent
-    if (valor == 0) {
-      if (esFosc) {
-        return const Color(0xFF3A3A3A);
-      }
-      return const Color(0xFFCDC1B4);
-    }
+    switch (valor) {
 
-    // Colors de les fitxes petites
-    if (valor == 2) {
-      return esFosc
-          ? const Color(0xFF776E65)
-          : const Color(0xFFEEE4DA);
-    }
+    // Color de les caselles buides
+      case 0:
+        return esFosc
+            ? const Color(0xFF3A3A3A)
+            : const Color(0xFFCDC1B4);
 
-    if (valor == 4) {
-      return esFosc
-          ? const Color(0xFF8F7A66)
-          : const Color(0xFFEDE0C8);
-    }
+    // Barregem el color seleccionat amb blanc
+      case 2:
+        return Color.lerp(
+          Colors.white, colorPersonalitzat, 0.15,
+        )!;
 
-    // Les fitxes de valor 8 o superior utilitzen
-    // el color personalitzat seleccionat per l'usuari
-    return colorPersonalitzat;
+      case 4:
+        return Color.lerp(
+          Colors.white, colorPersonalitzat, 0.30,
+        )!;
+
+      case 8:
+        return Color.lerp(
+          Colors.white, colorPersonalitzat, 0.45,
+        )!;
+
+      case 16:
+        return Color.lerp(
+          Colors.white, colorPersonalitzat, 0.60,
+        )!;
+
+      case 32:
+        return Color.lerp(
+          Colors.white, colorPersonalitzat, 0.75,
+        )!;
+
+    // Utilitzem el color seleccionat sense modificar-lo
+      case 64:
+        return colorPersonalitzat;
+
+    // Barregem el color seleccionat amb negre
+      case 128:
+        return Color.lerp(
+          colorPersonalitzat, Colors.black, 0.10,
+        )!;
+
+      case 256:
+        return Color.lerp(
+          colorPersonalitzat, Colors.black, 0.20,
+        )!;
+
+      case 512:
+        return Color.lerp(
+          colorPersonalitzat, Colors.black, 0.30,
+        )!;
+
+      case 1024:
+        return Color.lerp(
+          colorPersonalitzat, Colors.black, 0.40,
+        )!;
+
+      case 2048:
+        return Color.lerp(
+          colorPersonalitzat, Colors.black, 0.50,
+        )!;
+
+    // Fitxes superiors a 2048
+      default:
+        return Color.lerp(
+          colorPersonalitzat, Colors.black, 0.60,
+        )!;
+    }
   }
 
-  // Obtenim el color del text de les fitxes
+  // Obtenim el color del text segons el color de fons
   static Color obtenirColorTextFitxa(
       int valor,
       bool esFosc,
+      Color colorPersonalitzat,
       ) {
 
-    // En les fitxes de valor baix utilitzem text fosc
-    // quan el tema és clar
-    if (valor <= 4 && !esFosc) {
-      return const Color(0xFF776E65);
-    }
+    // Obtenim el color de fons de la fitxa
+    final Color colorFons = obtenirColorFitxa(
+      valor,
+      esFosc,
+      colorPersonalitzat,
+    );
 
-    return Colors.white;
+    // Si el fons és clar, utilitzem text negre.
+    // Si el fons és fosc, utilitzem text blanc.
+    return colorFons.computeLuminance() > 0.179
+        ? Colors.black
+        : Colors.white;
   }
 
   // Estil del text dels títols
