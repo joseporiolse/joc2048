@@ -576,7 +576,7 @@ class _GameScreenState extends State<GameScreen>
 
       if (!mounted) return;
 
-      await showDialog<void>(
+      final bool? tornarAJugar = await showDialog<bool>(
         context: context,
         barrierDismissible: false,
         builder: (context) => AlertDialog(
@@ -596,20 +596,43 @@ class _GameScreenState extends State<GameScreen>
             ],
           ),
           actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('Tornar a l\'inici'),
+            ),
             FilledButton(
               onPressed: () {
-                Navigator.pop(context);
+                Navigator.pop(context, true);
               },
-              child: const Text('Acceptar'),
+              child: const Text('Tornar a jugar'),
             ),
           ],
         ),
       );
 
       if (!mounted) return;
-      _sortirPantalla();
+      if (tornarAJugar == true) {
+        // Reiniciem el joc sense perdre el resultat anterior
+        setState(() {
+          _joc.iniciarPartida();
+          _segons = 0;
+          _finalitzada = false;
+          _sortint = false;
+          _dialogObert = false;
+          _victoriaMostrada = false;
+          _taulerAnterior = null;
+          _puntuacioAnterior = 0;
+          _movimentsAnteriors = 0;
+        });
+
+        _focusNode.requestFocus();
+        _iniciarTemporitzador();
+      } else {
+        _sortirPantalla();
+      }
 
     } catch (error) {
+      if (!mounted) return;
       _finalitzada = false;
 
       _mostrarMissatge(

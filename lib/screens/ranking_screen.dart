@@ -64,30 +64,15 @@ class _RankingScreenState extends State<RankingScreen> {
 
     List<Partida> partides;
 
-    // Si filtrem pel jugador, utilitzem el DAO
-    if (_nomJugador.isNotEmpty) {
-      partides = await _partidaDao.filtrarPerJugador(
+    // Apliquem els filtres directament a SQLite
+    if (_nomJugador.isNotEmpty || _filtreFitxa != null) {
+      partides = await _partidaDao.filtrarHistorial(
         _nomJugador,
+        _filtreFitxa,
       );
-
-    } else if (_filtreFitxa != null) {
-
-      // Si només filtrem per fitxa, consultem SQLite
-      partides = await _partidaDao.filtrarPerFitxa(
-        _filtreFitxa!,
-      );
-
     } else {
-
       // Sense filtres, obtenim el rànquing principal
       partides = await _partidaDao.obtenirRanking();
-    }
-
-    // Si hi ha dos filtres, apliquem també el de fitxa
-    if (_nomJugador.isNotEmpty && _filtreFitxa != null) {
-      partides = partides.where((partida) {
-        return partida.fitxaMaxima >= _filtreFitxa!;
-      }).toList();
     }
 
     // Ordenem les partides de major a menor puntuació
@@ -315,7 +300,8 @@ class _RankingScreenState extends State<RankingScreen> {
               titol:
               '${jugador['usuario'] ?? 'Jugador'}',
               valor:
-              '${jugador['millor_puntuacio'] ?? 0} punts',
+              '${jugador['millor_puntuacio'] ?? 0} punts\n'
+                  '${jugador['total_partides'] ?? 0} partides',
               icona: Icons.person,
             ),
           ),
