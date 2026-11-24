@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 class PartidaGuardada {
+
   int id;
   int idUsuari;
   List<int> tauler;
@@ -10,13 +11,13 @@ class PartidaGuardada {
 
   // Constructor de la partida guardada
   PartidaGuardada({
-    this.id = 1,
+    int? id,
     required this.idUsuari,
     required this.tauler,
     required this.puntuacio,
     required this.moviments,
     required this.segonsTranscorreguts,
-  });
+  }) : id = id ?? idUsuari;
 
   // Convertim la partida en un Map per guardar-la a SQLite
   Map<String, dynamic> toMap() {

@@ -1,11 +1,12 @@
 import 'package:sqflite/sqflite.dart';
-  import '../models/partida.dart';
+import '../models/partida.dart';
 import '../services/database_service.dart';
 
 class PartidaDao {
 
   // Obtenim la connexió amb la base de dades
-  Future<Database> get _db => DatabaseService.obtenirDatabase();
+  Future<Database> get _db =>
+      DatabaseService.obtenirDatabase();
 
   // Inserim una partida finalitzada
   Future<int> inserir(Partida partida) async {
@@ -145,7 +146,8 @@ class PartidaDao {
   }
 
   // Calculem les estadístiques de cada jugador
-  Future<List<Map<String, Object?>>> obtenirEstadistiquesJugadors() async {
+  Future<List<Map<String, Object?>>>
+  obtenirEstadistiquesJugadors() async {
     final db = await _db;
 
     return await db.rawQuery('''
@@ -180,17 +182,17 @@ class PartidaDao {
 
     await db.transaction((txn) async {
 
-      // Guardem la partida a l'historial
+      // Guardem la partida finalitzada a l'historial
       await txn.insert(
         'partidas',
         partida.toMap(),
       );
 
-      // Eliminem la partida que estava guardada
+      // Eliminem només la partida guardada de l'usuari actual
       await txn.delete(
         'partida_guardada',
-        where: 'id = ? AND id_usuario = ?',
-        whereArgs: [1, partida.idUsuari],
+        where: 'id_usuario = ?',
+        whereArgs: [partida.idUsuari],
       );
 
     });

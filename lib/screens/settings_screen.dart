@@ -462,8 +462,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
 
           const Text(
-            'Pots eliminar l\'historial de partides '
-                'guardat a la base de dades.',
+            'Vols eliminar l\'historial de partides '
+                'guardades a la base de dades?',
           ),
 
           const SizedBox(

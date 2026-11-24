@@ -1,11 +1,10 @@
-
 import 'package:flutter/material.dart';
-
 import '../models/usuari.dart';
 import '../data/partida_dao.dart';
 import '../data/partida_guardada_dao.dart';
 import '../services/app_theme.dart';
 import '../widgets/score_card.dart';
+import '../widgets/confirm_dialog.dart';
 
 class HomeScreen extends StatefulWidget {
 
@@ -139,9 +138,23 @@ class _HomeScreenState extends State<HomeScreen> {
     await _obrirRuta('/configuracio');
   }
 
-  // Tanquem la sessió
-  void _tancarSessio() {
-    Navigator.pop(context);
+  // Demanem confirmació abans de tancar la sessió
+  Future<void> _tancarSessio() async {
+
+    final bool confirmar = await ConfirmDialog.mostrar(
+      context,
+      titol: 'Tancar sessió',
+      missatge: 'Estàs segur que vols tancar la sessió?',
+      textConfirmar: 'Tancar sessió',
+      textCancelar: 'Cancel·lar',
+    );
+
+    if (!mounted) return;
+
+    // Si l'usuari confirma, tornem a la pantalla d'accés
+    if (confirmar) {
+      Navigator.pop(context);
+    }
   }
 
   // Gestionem la navegació inferior
@@ -163,18 +176,15 @@ class _HomeScreenState extends State<HomeScreen> {
 
     return Scaffold(
       appBar: AppBar(
+
+        // Eliminem la fletxa de tornar enrere
+        automaticallyImplyLeading: false,
+
         title: const Text('Joc 2048'),
 
         actions: [
 
-          // Actualitzem les dades manualment
-          IconButton(
-            onPressed: _carregarDades,
-            tooltip: 'Actualitzar',
-            icon: const Icon(Icons.refresh),
-          ),
-
-          // Tanquem la sessió
+          // Demanem confirmació per tancar la sessió
           IconButton(
             onPressed: _tancarSessio,
             tooltip: 'Tancar sessió',
@@ -195,6 +205,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
 
             child: Column(
+              mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
 
@@ -253,70 +264,19 @@ class _HomeScreenState extends State<HomeScreen> {
                   label: const Text('Nova partida'),
                 ),
 
-                const SizedBox(
-                  height: AppTheme.espaiMitja,
-                ),
-
                 // Continuem una partida guardada
-                if (!_carregant && _tePartidaGuardada)
+                if (!_carregant && _tePartidaGuardada) ...[
+
+                  const SizedBox(
+                    height: AppTheme.espaiMitja,
+                  ),
+
                   ElevatedButton.icon(
                     onPressed: _continuarPartida,
                     icon: const Icon(Icons.restore),
                     label: const Text('Continuar partida'),
                   ),
-
-                const SizedBox(
-                  height: AppTheme.espaiGran,
-                ),
-
-                // Accés a l'historial
-                Card(
-                  child: ListTile(
-                    leading: const Icon(Icons.history),
-                    title: const Text('Historial'),
-                    subtitle: const Text(
-                      'Consulta les teves partides anteriors',
-                    ),
-                    trailing: const Icon(
-                      Icons.chevron_right,
-                    ),
-                    onTap: _anarHistorial,
-                  ),
-                ),
-
-                // Accés al rànquing
-                Card(
-                  child: ListTile(
-                    leading: const Icon(
-                      Icons.emoji_events,
-                    ),
-                    title: const Text(
-                      'Rànquing i estadístiques',
-                    ),
-                    subtitle: const Text(
-                      'Consulta les millors puntuacions',
-                    ),
-                    trailing: const Icon(
-                      Icons.chevron_right,
-                    ),
-                    onTap: _anarRanking,
-                  ),
-                ),
-
-                // Accés a la configuració
-                Card(
-                  child: ListTile(
-                    leading: const Icon(Icons.settings),
-                    title: const Text('Configuració'),
-                    subtitle: const Text(
-                      'Personalitza el tema i els colors',
-                    ),
-                    trailing: const Icon(
-                      Icons.chevron_right,
-                    ),
-                    onTap: _anarConfiguracio,
-                  ),
-                ),
+                ],
               ],
             ),
           ),
@@ -342,12 +302,8 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
 
           NavigationDestination(
-            icon: Icon(
-              Icons.emoji_events_outlined,
-            ),
-            selectedIcon: Icon(
-              Icons.emoji_events,
-            ),
+            icon: Icon(Icons.emoji_events_outlined),
+            selectedIcon: Icon(Icons.emoji_events),
             label: 'Rànquing',
           ),
 

@@ -1,4 +1,3 @@
-
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 
@@ -21,14 +20,14 @@ class DatabaseService {
     // Obrim la base de dades i si no existeix la creem
     _database = await openDatabase(
       rutaCompleta,
-      version: 2,
+      version: 3,
 
       // Activem les claus foranes per relacionar les taules
       onConfigure: (db) async {
         await db.execute('PRAGMA foreign_keys = ON');
       },
 
-      // Creem les taules quan es crea la base de dades per primera vegada
+      // Creem les taules quan es crea la base de dades
       onCreate: (db, version) async {
 
         // Taula dels usuaris registrats
@@ -58,11 +57,11 @@ class DatabaseService {
           )
         ''');
 
-        // Taula per guardar la partida actual
+        // Cada usuari pot tenir una partida guardada
         await db.execute('''
           CREATE TABLE partida_guardada(
-            id INTEGER PRIMARY KEY CHECK (id = 1),
-            id_usuario INTEGER NOT NULL,
+            id INTEGER PRIMARY KEY,
+            id_usuario INTEGER NOT NULL UNIQUE,
             tablero TEXT NOT NULL,
             puntuacion INTEGER NOT NULL,
             movimientos INTEGER NOT NULL,
@@ -77,12 +76,63 @@ class DatabaseService {
       // Actualitzem la base de dades sense perdre les dades existents
       onUpgrade: (db, oldVersion, newVersion) async {
 
-        // Si venim de la versió 1, afegim la mida del tauler
+        // Migració de la versió 1 a la versió 2
         if (oldVersion < 2) {
           await db.execute('''
             ALTER TABLE partidas
             ADD COLUMN tamano_tablero INTEGER NOT NULL DEFAULT 4
           ''');
+        }
+
+        // Migració a la versió 3
+        if (oldVersion < 3) {
+
+          // Canviem el nom de la taula antiga
+          await db.execute('''
+            ALTER TABLE partida_guardada
+            RENAME TO partida_guardada_antiga
+          ''');
+
+          // Creem la nova taula sense la restricció de l'id
+          await db.execute('''
+            CREATE TABLE partida_guardada(
+              id INTEGER PRIMARY KEY,
+              id_usuario INTEGER NOT NULL UNIQUE,
+              tablero TEXT NOT NULL,
+              puntuacion INTEGER NOT NULL,
+              movimientos INTEGER NOT NULL,
+              segundos_transcurridos INTEGER NOT NULL,
+              FOREIGN KEY (id_usuario)
+                REFERENCES usuario(id_usuario)
+            )
+          ''');
+
+          // Recuperem les dades de la taula antiga
+          // Utilitzem l'id de l'usuari com a id de la partida
+          await db.execute('''
+            INSERT INTO partida_guardada(
+              id,
+              id_usuario,
+              tablero,
+              puntuacion,
+              movimientos,
+              segundos_transcurridos
+            )
+            SELECT
+              id_usuario,
+              id_usuario,
+              tablero,
+              puntuacion,
+              movimientos,
+              segundos_transcurridos
+            FROM partida_guardada_antiga
+          ''');
+
+          // Eliminem la taula antiga després de copiar les dades
+          await db.execute('''
+            DROP TABLE partida_guardada_antiga
+          ''');
+
         }
 
       },
