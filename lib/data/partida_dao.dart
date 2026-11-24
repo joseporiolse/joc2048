@@ -48,22 +48,26 @@ class PartidaDao {
     return Partida.fromMap(files.first);
   }
 
-  // Eliminem una partida concreta
-  Future<int> eliminar(int id) async {
+  // Eliminem una partida concreta del nostre usuari
+  Future<int> eliminar(int id, int idUsuari) async {
     final db = await _db;
 
     return await db.delete(
       'partidas',
-      where: 'id_partida = ?',
-      whereArgs: [id],
+      where: 'id_partida = ? AND id_usuario = ?',
+      whereArgs: [id, idUsuari],
     );
   }
 
-  // Eliminem totes les partides de l'historial
-  Future<int> buidarHistorial() async {
+  // Eliminem totes les partides de l'usuari actual
+  Future<int> buidarHistorial(int idUsuari) async {
     final db = await _db;
 
-    return await db.delete('partidas');
+    return await db.delete(
+      'partidas',
+      where: 'id_usuario = ?',
+      whereArgs: [idUsuari],
+    );
   }
 
   // Restaurem una partida eliminada
@@ -73,7 +77,7 @@ class PartidaDao {
     await db.insert(
       'partidas',
       partida.toMap(),
-      conflictAlgorithm: ConflictAlgorithm.replace,
+      conflictAlgorithm: ConflictAlgorithm.abort,
     );
   }
 
@@ -86,6 +90,20 @@ class PartidaDao {
       orderBy: 'puntuacion DESC',
       limit: 10,
     );
+
+    return files.map(Partida.fromMap).toList();
+  }
+
+  // Consultem l'historial aplicant els dos filtres a SQLite
+  Future<List<Partida>> filtrarHistorial(String nom, int? fitxa) async {
+    final db = await _db;
+
+    final files = await db.rawQuery('''
+      SELECT p.* FROM partidas p
+      INNER JOIN usuario u ON p.id_usuario = u.id_usuario
+      WHERE u.usuario LIKE ? AND p.ficha_maxima >= ?
+      ORDER BY p.fecha DESC
+    ''', ['%$nom%', fitxa ?? 0]);
 
     return files.map(Partida.fromMap).toList();
   }

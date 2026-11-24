@@ -8,20 +8,24 @@ class PartidaListItem extends StatelessWidget {
   final Partida partida;
 
   // Acció quan l'usuari toca la partida
-  final VoidCallback enTocar;
+  final VoidCallback? enTocar;
+  final bool esEliminable;
+  final int? posicio;
 
   // Acció quan l'usuari elimina la partida
-  final VoidCallback enEliminar;
+  final VoidCallback? enEliminar;
 
   // Funció que confirma si podem eliminar la partida
-  final Future<bool> Function() confirmarEliminacio;
+  final Future<bool> Function()? confirmarEliminacio;
 
   const PartidaListItem({
     super.key,
     required this.partida,
-    required this.enTocar,
-    required this.enEliminar,
-    required this.confirmarEliminacio,
+    this.enTocar,
+    this.esEliminable = true,
+    this.posicio,
+    this.enEliminar,
+    this.confirmarEliminacio,
   });
 
   // Donem format a la data ISO de la partida
@@ -55,16 +59,17 @@ class PartidaListItem extends StatelessWidget {
       key: ValueKey(partida.idPartida),
 
       // Només permetem lliscar cap a l'esquerra
-      direction: DismissDirection.endToStart,
+      direction: esEliminable && enEliminar != null && confirmarEliminacio != null
+          ? DismissDirection.endToStart : DismissDirection.none,
 
       // Demanem confirmació abans d'eliminar
       confirmDismiss: (direccio) {
-        return confirmarEliminacio();
+        return confirmarEliminacio?.call() ?? Future.value(false);
       },
 
       // Avisem la pantalla quan s'ha confirmat
       onDismissed: (direccio) {
-        enEliminar();
+        enEliminar?.call();
       },
 
       // Fons vermell que apareix en lliscar
@@ -100,7 +105,7 @@ class PartidaListItem extends StatelessWidget {
           leading: CircleAvatar(
             backgroundColor: colors.primaryContainer,
 
-            child: Icon(
+            child: posicio != null ? Text('$posicio') : Icon(
               Icons.sports_esports,
               color: colors.onPrimaryContainer,
             ),
@@ -111,7 +116,7 @@ class PartidaListItem extends StatelessWidget {
             '${partida.puntuacio} punts',
             style: const TextStyle(
               fontWeight: FontWeight.bold,
-              fontSize: 18,
+              fontSize: AppTheme.midaSubtitol,
             ),
           ),
 
@@ -139,9 +144,7 @@ class PartidaListItem extends StatelessWidget {
           ),
 
           // Icona per indicar que podem veure el detall
-          trailing: const Icon(
-            Icons.chevron_right,
-          ),
+          trailing: Icon(enTocar != null ? Icons.chevron_right : Icons.emoji_events_outlined),
 
           // Obrim el detall quan es toca la partida
           onTap: enTocar,

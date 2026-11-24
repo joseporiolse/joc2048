@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 import '../data/partida_dao.dart';
 import '../main.dart';
+import '../models/usuari.dart';
 import '../services/app_theme.dart';
 import '../services/preferencies_service.dart';
 import '../widgets/confirm_dialog.dart';
 
 class SettingsScreen extends StatefulWidget {
-  const SettingsScreen({super.key});
+  final Usuari usuari;
+
+  const SettingsScreen({super.key, required this.usuari});
 
   @override
   State<SettingsScreen> createState() =>
@@ -148,7 +151,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       titol: 'Buidar tot l\'historial?',
       missatge:
       'S\'eliminaran permanentment totes les '
-          'partides registrades de tots els usuaris. '
+          'partides registrades del teu compte. '
           'Aquesta acció no es podrà desfer.',
       textConfirmar: 'Eliminar-ho tot',
       esPerillos: true,
@@ -168,7 +171,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
     try {
       // El DAO executa l'eliminació a SQLite
-      await _partidaDao.buidarHistorial();
+      await _partidaDao.buidarHistorial(widget.usuari.idUsuari!);
 
       if (!mounted) return;
 

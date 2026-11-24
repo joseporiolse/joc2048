@@ -11,6 +11,7 @@ class AppTheme {
   static const double espaiMitja = 16;
   static const double espaiGran = 24;
   static const double radiVores = 12;
+  static const double midaSubtitol = 18;
 
   // Tema clar de l'aplicació
   static final ThemeData temaClar = ThemeData(

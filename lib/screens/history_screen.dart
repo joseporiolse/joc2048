@@ -1,6 +1,4 @@
-
 import 'package:flutter/material.dart';
-
 import '../data/partida_dao.dart';
 import '../models/partida.dart';
 import '../models/usuari.dart';
@@ -68,32 +66,10 @@ class _HistoryScreenState extends State<HistoryScreen> {
   // Consultem SQLite i apliquem els filtres
   Future<List<Partida>> _obtenirPartides(int versio) async {
 
-    // Obtenim totes les partides
-    final List<Partida> totes =
-    await _partidaDao.obtenirHistorial();
-
-    // Mostrem només les de l'usuari autenticat
-    List<Partida> resultat = totes.where((partida) {
-      return partida.idUsuari == widget.usuari.idUsuari;
-    }).toList();
-
-    // Filtrem pel nom del jugador
-    if (_filtreJugador.isNotEmpty) {
-      final bool coincideix = widget.usuari.usuari
-          .toLowerCase()
-          .contains(_filtreJugador.toLowerCase());
-
-      if (!coincideix) {
-        resultat = [];
-      }
-    }
-
-    // Filtrem per fitxa màxima aconseguida
-    if (_filtreFitxa != null) {
-      resultat = resultat.where((partida) {
-        return partida.fitxaMaxima >= _filtreFitxa!;
-      }).toList();
-    }
+    // Consultem els filtres directament al DAO
+    final String nom = _filtreJugador;
+    final int? fitxa = _filtreFitxa;
+    final List<Partida> resultat = await _partidaDao.filtrarHistorial(nom, fitxa);
 
     // Actualitzem la llista només si és la consulta actual
     if (mounted && versio == _versioCarrega) {
@@ -159,6 +135,8 @@ class _HistoryScreenState extends State<HistoryScreen> {
   // Eliminem una partida de SQLite
   Future<void> _eliminarPartida(Partida partida) async {
 
+    if (partida.idUsuari != widget.usuari.idUsuari) return;
+
     // Eliminem visualment la partida
     setState(() {
       _partides.removeWhere((element) {
@@ -167,7 +145,12 @@ class _HistoryScreenState extends State<HistoryScreen> {
     });
 
     try {
-      await _partidaDao.eliminar(partida.idPartida!);
+      final eliminades = await _partidaDao.eliminar(
+        partida.idPartida!, widget.usuari.idUsuari!,
+      );
+      if (eliminades == 0) {
+        throw StateError("No s’ha eliminat cap partida");
+      }
 
       if (!mounted) return;
 
@@ -238,7 +221,10 @@ class _HistoryScreenState extends State<HistoryScreen> {
     await Navigator.pushNamed<bool>(
       context,
       '/detall',
-      arguments: partida.idPartida,
+      arguments: <String, int>{
+        'idPartida': partida.idPartida!,
+        'idUsuari': widget.usuari.idUsuari!,
+      },
     );
 
     if (!mounted) return;
@@ -270,17 +256,19 @@ class _HistoryScreenState extends State<HistoryScreen> {
                 },
               ),
 
-              // Eliminar la partida
-              ListTile(
-                leading: const Icon(
-                  Icons.delete,
-                  color: Colors.red,
+              // Només podem eliminar les nostres partides
+              if (partida.idUsuari == widget.usuari.idUsuari)
+                ListTile(
+                  leading: Icon(
+                    Icons.delete,
+                    color: Theme.of(context).colorScheme.error,
+
+                  ),
+                  title: const Text('Eliminar partida'),
+                  onTap: () {
+                    Navigator.pop(context, 'eliminar');
+                  },
                 ),
-                title: const Text('Eliminar partida'),
-                onTap: () {
-                  Navigator.pop(context, 'eliminar');
-                },
-              ),
             ],
           ),
         );
@@ -328,16 +316,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
   // Eliminem les partides de l'usuari actual
   Future<void> _buidarHistorial() async {
     try {
-      final List<Partida> partides =
-      await _partidaDao.obtenirHistorial();
-
-      for (final Partida partida in partides) {
-        if (partida.idUsuari == widget.usuari.idUsuari) {
-          await _partidaDao.eliminar(
-            partida.idPartida!,
-          );
-        }
-      }
+      await _partidaDao.buidarHistorial(widget.usuari.idUsuari!);
 
       if (!mounted) return;
 
@@ -497,12 +476,15 @@ class _HistoryScreenState extends State<HistoryScreen> {
 
           // Detectem la pulsació llarga sobre la partida
           return GestureDetector(
+            key: ValueKey(partida.idPartida),
             onLongPress: () {
               _mostrarOpcionsPartida(partida);
             },
 
             child: PartidaListItem(
+              key: ValueKey(partida.idPartida),
               partida: partida,
+              esEliminable: partida.idUsuari == widget.usuari.idUsuari,
 
               // Pulsació curta: obrim el detall
               enTocar: () {

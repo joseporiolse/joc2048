@@ -874,7 +874,7 @@ class _GameScreenState extends State<GameScreen>
       children: [
         Text(
           'Jugador: ${widget.usuari.usuari}',
-          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          style: const TextStyle(fontSize: AppTheme.midaSubtitol, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: AppTheme.espaiPetit),
         GestureDetector(

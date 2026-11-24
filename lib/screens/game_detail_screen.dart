@@ -11,10 +11,12 @@ class GameDetailScreen extends StatefulWidget {
 
   // Identificador de la partida que volem consultar
   final int idPartida;
+  final int idUsuari;
 
   const GameDetailScreen({
     super.key,
     required this.idPartida,
+    required this.idUsuari,
   });
 
   @override
@@ -127,6 +129,7 @@ class _GameDetailScreenState extends State<GameDetailScreen> {
       final int filesEliminades =
       await _partidaDao.eliminar(
         widget.idPartida,
+        widget.idUsuari,
       );
 
       if (!mounted) return;
@@ -137,7 +140,7 @@ class _GameDetailScreenState extends State<GameDetailScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text(
-              'La partida ja no existeix.',
+              'La partida no existeix o no és teva.',
             ),
           ),
         );
@@ -304,7 +307,7 @@ class _GameDetailScreenState extends State<GameDetailScreen> {
                       const Text(
                         'Informació de la partida',
                         style: TextStyle(
-                          fontSize: 18,
+                          fontSize: AppTheme.midaSubtitol,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -343,33 +346,34 @@ class _GameDetailScreenState extends State<GameDetailScreen> {
               ),
 
               // Botó per eliminar la partida
-              FilledButton.icon(
-                onPressed:
-                _eliminant ? null : _confirmarEliminacio,
+              if (partida.idUsuari == widget.idUsuari)
+                FilledButton.icon(
+                  onPressed:
+                  _eliminant ? null : _confirmarEliminacio,
 
-                icon: _eliminant
-                    ? const SizedBox(
-                  width: 20,
-                  height: 20,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
+                  icon: _eliminant
+                      ? const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                    ),
+                  )
+                      : const Icon(Icons.delete),
+
+                  label: Text(
+                    _eliminant
+                        ? 'Eliminant...'
+                        : 'Eliminar partida',
                   ),
-                )
-                    : const Icon(Icons.delete),
 
-                label: Text(
-                  _eliminant
-                      ? 'Eliminant...'
-                      : 'Eliminar partida',
+                  style: FilledButton.styleFrom(
+                    backgroundColor:
+                    Theme.of(context).colorScheme.error,
+                    foregroundColor:
+                    Theme.of(context).colorScheme.onError,
+                  ),
                 ),
-
-                style: FilledButton.styleFrom(
-                  backgroundColor:
-                  Theme.of(context).colorScheme.error,
-                  foregroundColor:
-                  Theme.of(context).colorScheme.onError,
-                ),
-              ),
             ],
           ),
         ),

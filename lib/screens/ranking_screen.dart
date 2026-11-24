@@ -1,12 +1,11 @@
-
 import 'package:flutter/material.dart';
-
 import '../data/partida_dao.dart';
 import '../models/partida.dart';
 import '../services/app_theme.dart';
 import '../widgets/async_data_view.dart';
 import '../widgets/empty_state_view.dart';
 import '../widgets/stat_card.dart';
+import '../widgets/partida_list_item.dart';
 
 class RankingScreen extends StatefulWidget {
   const RankingScreen({super.key});
@@ -178,30 +177,11 @@ class _RankingScreenState extends State<RankingScreen> {
         // Mostrem la posició de cada partida
         for (int index = 0; index < partides.length; index++)
 
-          Card(
-            child: ListTile(
-
-              leading: CircleAvatar(
-                child: Text('${index + 1}'),
-              ),
-
-              title: Text(
-                '${partides[index].puntuacio} punts',
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-
-              subtitle: Text(
-                'Fitxa màxima: '
-                    '${partides[index].fitxaMaxima} · '
-                    'Moviments: ${partides[index].moviments}',
-              ),
-
-              trailing: const Icon(
-                Icons.emoji_events_outlined,
-              ),
-            ),
+          PartidaListItem(
+            key: ValueKey(partides[index].idPartida),
+            partida: partides[index],
+            posicio: index + 1,
+            esEliminable: false,
           ),
       ],
     );
