@@ -1,6 +1,4 @@
-
 import 'package:flutter/material.dart';
-
 import 'models/usuari.dart';
 import 'screens/login_screen.dart';
 import 'screens/register_screen.dart';
@@ -107,11 +105,13 @@ class Joc2048App extends StatelessWidget {
     // Detall d'una partida
       case '/detall':
 
-        final int idPartida = settings.arguments as int;
+        final arguments = settings.arguments as Map<String, int>;
+        final int idPartida = arguments['idPartida']!;
 
-        return MaterialPageRoute(
+        return MaterialPageRoute<bool>(
           builder: (context) => GameDetailScreen(
             idPartida: idPartida,
+            idUsuari: arguments['idUsuari']!,
           ),
         );
 
@@ -124,7 +124,7 @@ class Joc2048App extends StatelessWidget {
     // Configuració
       case '/configuracio':
         return MaterialPageRoute(
-          builder: (context) => const SettingsScreen(),
+          builder: (context) => SettingsScreen(usuari: settings.arguments as Usuari),
         );
 
     // Ruta desconeguda
